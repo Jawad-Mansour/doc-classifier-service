@@ -78,8 +78,23 @@ python3 app/classifier/eval/golden.py
 - Output JSON: `tmp/inference_latency.json`
 - Real README latency numbers should be copied from the measured output after running locally or in Docker.
 
+## New model artifact refresh
+- Replaced the previous classifier artifact with the newer model.
+- New artifact SHA-256: `219501b3dae668c7834376fb201468ea073614511be49e66bf1e7f6b4ce1f754`
+- Regenerated `app/classifier/eval/golden_expected.json` for the local CPU replay environment.
+- Golden replay now passes again at `1e-06` with the new model artifact and updated golden set.
+- `tests/classifier` still pass with the new artifact.
+- `scripts/run_local_inference.py` still produces a valid prediction and overlay with the new artifact.
+
+## Backend test note
+- Installed backend test dependencies into the local `.venv` to try Ali's FastAPI route tests.
+- Route tests are currently blocked by backend app startup, not by the classifier artifact.
+- Current blocker: `app/core/config.py` is empty, so `from app.core.config import settings` fails during app import.
+- Affected test entrypoints include `tests/api/test_health.py`, `tests/api/test_auth.py`, `tests/api/test_auth_permissions.py`, `tests/test_route_protection.py`, and `tests/test_rbac_permissions.py`.
+
 ## Blocked
 - No current blocker for local CPU golden replay once the ML dependencies are installed.
+- Backend route tests are blocked until a working `settings` object is restored in `app/core/config.py`.
 
 ## Contracts needed
 - From Aya: Redis job payload shape
