@@ -1,0 +1,336 @@
+{
+  "model_name": "rvl_cdip_convnext_tiny_classifier",
+  "created_at_utc": "2026-05-11T18:52:59.197751+00:00",
+  "dataset": {
+    "name": "RVL-CDIP",
+    "task": "document_layout_classification",
+    "classes": [
+      "letter",
+      "form",
+      "email",
+      "handwritten",
+      "advertisement",
+      "scientific_report",
+      "scientific_publication",
+      "specification",
+      "file_folder",
+      "news_article",
+      "budget",
+      "invoice",
+      "presentation",
+      "questionnaire",
+      "resume",
+      "memo"
+    ],
+    "num_classes": 16,
+    "note": "No OCR. Classification is based on visual document layout."
+  },
+  "architecture": {
+    "backbone": "convnext_tiny",
+    "weights": "ConvNeXt_Tiny_Weights.DEFAULT",
+    "input_size": [
+      224,
+      224
+    ],
+    "grayscale_handling": "Input TIFFs are converted to RGB because ImageNet-pretrained ConvNeXt expects 3-channel input.",
+    "freeze_policy": "partial_unfreeze_last_convnext_stage_plus_classifier_full_train"
+  },
+  "preprocessing": {
+    "resize": [
+      224,
+      224
+    ],
+    "convert": "RGB",
+    "normalize_mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "normalize_std": [
+      0.229,
+      0.224,
+      0.225
+    ]
+  },
+  "training": {
+    "train_split_samples": 320000,
+    "validation_split_samples": 40000,
+    "batch_size": 32,
+    "optimizer": "AdamW",
+    "loss": "CrossEntropyLoss",
+    "training_note": "Started from frozen-backbone baseline, then partially unfroze the final ConvNeXt feature stage plus classifier head and trained on the full RVL-CDIP train split.",
+    "validation_metrics": {
+      "loss": 0.7591873277664185,
+      "top1_accuracy": 0.77325,
+      "top5_accuracy": 0.956025,
+      "total_samples": 40000,
+      "per_class_accuracy": [
+        {
+          "class_id": 0,
+          "class_name": "letter",
+          "correct": 1912,
+          "total": 2430,
+          "accuracy": 0.7868312757201646
+        },
+        {
+          "class_id": 1,
+          "class_name": "form",
+          "correct": 1510,
+          "total": 2537,
+          "accuracy": 0.5951911706740244
+        },
+        {
+          "class_id": 2,
+          "class_name": "email",
+          "correct": 2310,
+          "total": 2530,
+          "accuracy": 0.9130434782608695
+        },
+        {
+          "class_id": 3,
+          "class_name": "handwritten",
+          "correct": 2170,
+          "total": 2434,
+          "accuracy": 0.8915365653245686
+        },
+        {
+          "class_id": 4,
+          "class_name": "advertisement",
+          "correct": 2163,
+          "total": 2522,
+          "accuracy": 0.8576526566217287
+        },
+        {
+          "class_id": 5,
+          "class_name": "scientific_report",
+          "correct": 1260,
+          "total": 2508,
+          "accuracy": 0.5023923444976076
+        },
+        {
+          "class_id": 6,
+          "class_name": "scientific_publication",
+          "correct": 2129,
+          "total": 2526,
+          "accuracy": 0.8428345209817893
+        },
+        {
+          "class_id": 7,
+          "class_name": "specification",
+          "correct": 2153,
+          "total": 2531,
+          "accuracy": 0.8506519162386409
+        },
+        {
+          "class_id": 8,
+          "class_name": "file_folder",
+          "correct": 2290,
+          "total": 2451,
+          "accuracy": 0.934312525499796
+        },
+        {
+          "class_id": 9,
+          "class_name": "news_article",
+          "correct": 2045,
+          "total": 2526,
+          "accuracy": 0.8095803642121931
+        },
+        {
+          "class_id": 10,
+          "class_name": "budget",
+          "correct": 1789,
+          "total": 2485,
+          "accuracy": 0.7199195171026157
+        },
+        {
+          "class_id": 11,
+          "class_name": "invoice",
+          "correct": 2099,
+          "total": 2576,
+          "accuracy": 0.8148291925465838
+        },
+        {
+          "class_id": 12,
+          "class_name": "presentation",
+          "correct": 1850,
+          "total": 2468,
+          "accuracy": 0.7495948136142626
+        },
+        {
+          "class_id": 13,
+          "class_name": "questionnaire",
+          "correct": 1525,
+          "total": 2517,
+          "accuracy": 0.6058800158919349
+        },
+        {
+          "class_id": 14,
+          "class_name": "resume",
+          "correct": 2064,
+          "total": 2426,
+          "accuracy": 0.8507831821929102
+        },
+        {
+          "class_id": 15,
+          "class_name": "memo",
+          "correct": 1661,
+          "total": 2533,
+          "accuracy": 0.655744176865377
+        }
+      ]
+    }
+  },
+  "artifact": {
+    "filename": "classifier.pt",
+    "sha256": "dc3737d3584d8ba8a405041cd97486835f15a56d3914914247d0b4002d1d4bb5"
+  },
+  "metrics": {
+    "full_test_split": {
+      "attempted_samples": 40000,
+      "evaluated_samples": 39999,
+      "skipped_samples": 1,
+      "skipped_image_log": [
+        {
+          "split": "test",
+          "index": 33669,
+          "error": "UnidentifiedImageError('cannot identify image file <_io.BytesIO object at 0x7dbca98136f0>')"
+        }
+      ],
+      "test_evaluation_note": "Attempted full 40,000-image RVL-CDIP test split. Skipped 1 unreadable/corrupt TIFF during PIL decoding. Metrics computed on 39,999 successfully decoded images.",
+      "loss": 0.7626280097869752,
+      "top1_accuracy": 0.7698442461061527,
+      "top5_accuracy": 0.9554488862221555,
+      "per_class_accuracy": [
+        {
+          "class_id": 0,
+          "class_name": "letter",
+          "correct": 1892,
+          "total": 2464,
+          "accuracy": 0.7678571428571429
+        },
+        {
+          "class_id": 1,
+          "class_name": "form",
+          "correct": 1523,
+          "total": 2506,
+          "accuracy": 0.6077414205905826
+        },
+        {
+          "class_id": 2,
+          "class_name": "email",
+          "correct": 2290,
+          "total": 2516,
+          "accuracy": 0.910174880763116
+        },
+        {
+          "class_id": 3,
+          "class_name": "handwritten",
+          "correct": 2263,
+          "total": 2532,
+          "accuracy": 0.8937598736176935
+        },
+        {
+          "class_id": 4,
+          "class_name": "advertisement",
+          "correct": 2132,
+          "total": 2515,
+          "accuracy": 0.847713717693837
+        },
+        {
+          "class_id": 5,
+          "class_name": "scientific_report",
+          "correct": 1275,
+          "total": 2498,
+          "accuracy": 0.5104083266613291
+        },
+        {
+          "class_id": 6,
+          "class_name": "scientific_publication",
+          "correct": 2171,
+          "total": 2571,
+          "accuracy": 0.8444185141968106
+        },
+        {
+          "class_id": 7,
+          "class_name": "specification",
+          "correct": 2055,
+          "total": 2472,
+          "accuracy": 0.8313106796116505
+        },
+        {
+          "class_id": 8,
+          "class_name": "file_folder",
+          "correct": 2368,
+          "total": 2527,
+          "accuracy": 0.9370795409576573
+        },
+        {
+          "class_id": 9,
+          "class_name": "news_article",
+          "correct": 1928,
+          "total": 2463,
+          "accuracy": 0.782785221274868
+        },
+        {
+          "class_id": 10,
+          "class_name": "budget",
+          "correct": 1782,
+          "total": 2505,
+          "accuracy": 0.7113772455089821
+        },
+        {
+          "class_id": 11,
+          "class_name": "invoice",
+          "correct": 1997,
+          "total": 2477,
+          "accuracy": 0.8062171982236577
+        },
+        {
+          "class_id": 12,
+          "class_name": "presentation",
+          "correct": 1865,
+          "total": 2489,
+          "accuracy": 0.7492969063881076
+        },
+        {
+          "class_id": 13,
+          "class_name": "questionnaire",
+          "correct": 1464,
+          "total": 2435,
+          "accuracy": 0.6012320328542095
+        },
+        {
+          "class_id": 14,
+          "class_name": "resume",
+          "correct": 2158,
+          "total": 2537,
+          "accuracy": 0.8506109578242018
+        },
+        {
+          "class_id": 15,
+          "class_name": "memo",
+          "correct": 1630,
+          "total": 2492,
+          "accuracy": 0.6540930979133226
+        }
+      ],
+      "worst_class": {
+        "class_id": 5,
+        "class_name": "scientific_report",
+        "correct": 1275,
+        "total": 2498,
+        "accuracy": 0.5104083266613291
+      }
+    }
+  },
+  "environment_fingerprint": {
+    "python": "3.12.13 (main, Mar  4 2026, 09:23:07) [GCC 11.4.0]",
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.35",
+    "torch": "2.10.0+cu128",
+    "torchvision": "0.25.0+cu128",
+    "datasets": "3.6.0",
+    "huggingface_hub": "0.36.0",
+    "cuda_available": true,
+    "cuda_device": "Tesla T4"
+  }
+}
