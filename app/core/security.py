@@ -4,8 +4,20 @@ Security settings and auth configuration.
 
 import os
 from typing import Any
+from passlib.context import CryptContext
 from pydantic import BaseModel, Field, field_validator
 from app.core.config import settings
+
+
+_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def hash_password(plain: str) -> str:
+    return _pwd_context.hash(plain)
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return _pwd_context.verify(plain, hashed)
 
 
 def _normalize_origins(value: Any) -> list[str]:
