@@ -16,4 +16,5 @@ class PredictionResult(BaseModel):
     label: str
     confidence: float
     top5: list[TopKPrediction]
+    all_probs: dict[str, float]
     model_sha256: str

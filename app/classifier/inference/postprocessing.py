@@ -27,6 +27,10 @@ def logits_to_prediction(
         )
 
     probabilities = torch.softmax(logits, dim=0)
+    all_probs = {
+        class_name: float(probability.item())
+        for class_name, probability in zip(class_names, probabilities)
+    }
     top5_values, top5_indices = probabilities.topk(5)
 
     top5 = [
@@ -44,5 +48,6 @@ def logits_to_prediction(
         label=top1.label,
         confidence=float(top1.confidence),
         top5=top5,
+        all_probs=all_probs,
         model_sha256=model_sha256,
     )

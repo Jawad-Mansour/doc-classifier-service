@@ -92,6 +92,17 @@ python3 app/classifier/eval/golden.py
 - Current blocker: `app/core/config.py` is empty, so `from app.core.config import settings` fails during app import.
 - Affected test entrypoints include `tests/api/test_health.py`, `tests/api/test_auth.py`, `tests/api/test_auth_permissions.py`, `tests/test_route_protection.py`, and `tests/test_rbac_permissions.py`.
 
+## Prediction service contract
+- Added `all_probs` to `PredictionResult` because Mohamad's `prediction_service.create_prediction(...)` requires the full softmax distribution.
+- `all_probs` contains one float probability per model class name for all 16 RVL-CDIP classes.
+- Jad-side verification commands:
+
+```bash
+.venv/bin/python app/classifier/eval/golden.py
+.venv/bin/python scripts/run_local_inference.py
+.venv/bin/python -m pytest --noconftest tests/classifier
+```
+
 ## Blocked
 - No current blocker for local CPU golden replay once the ML dependencies are installed.
 - Backend route tests are blocked until a working `settings` object is restored in `app/core/config.py`.
