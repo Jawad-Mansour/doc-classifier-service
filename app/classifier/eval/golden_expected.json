@@ -1,0 +1,1875 @@
+{
+  "created_at_utc": "2026-05-12T08:50:32.123102+00:00",
+  "model_file": "app/classifier/models/classifier.pt",
+  "model_sha256": "dc3737d3584d8ba8a405041cd97486835f15a56d3914914247d0b4002d1d4bb5",
+  "num_images": 50,
+  "preprocessing": {
+    "resize": [
+      224,
+      224
+    ],
+    "convert": "RGB",
+    "normalize_mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "normalize_std": [
+      0.229,
+      0.224,
+      0.225
+    ]
+  },
+  "items": [
+    {
+      "file": "test_04838_true_0_letter.tiff",
+      "test_index": 4838,
+      "ground_truth_label_id": 0,
+      "ground_truth_label_name": "letter",
+      "expected_label_id": 0,
+      "expected_label_name": "letter",
+      "expected_top1_confidence": 0.9999344348907471,
+      "expected_top5": [
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 0.9999344348907471
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 2.5316317987744696e-05
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 2.099911762343254e-05
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 6.827232937212102e-06
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 5.019981472287327e-06
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_17207_true_0_letter.tiff",
+      "test_index": 17207,
+      "ground_truth_label_id": 0,
+      "ground_truth_label_name": "letter",
+      "expected_label_id": 0,
+      "expected_label_name": "letter",
+      "expected_top1_confidence": 0.27728575468063354,
+      "expected_top5": [
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 0.27728575468063354
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.2771628201007843
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.21123817563056946
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.09988856315612793
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.03386043757200241
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_39058_true_0_letter.tiff",
+      "test_index": 39058,
+      "ground_truth_label_id": 0,
+      "ground_truth_label_name": "letter",
+      "expected_label_id": 0,
+      "expected_label_name": "letter",
+      "expected_top1_confidence": 0.9996353387832642,
+      "expected_top5": [
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 0.9996353387832642
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.0002867502626031637
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 3.771589035750367e-05
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 1.4181953702063765e-05
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 8.718453500478063e-06
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_03996_true_1_form.tiff",
+      "test_index": 3996,
+      "ground_truth_label_id": 1,
+      "ground_truth_label_name": "form",
+      "expected_label_id": 1,
+      "expected_label_name": "form",
+      "expected_top1_confidence": 0.3202736973762512,
+      "expected_top5": [
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.3202736973762512
+        },
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 0.31776463985443115
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.21220330893993378
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 0.10212908685207367
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.017486367374658585
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_21442_true_1_form.tiff",
+      "test_index": 21442,
+      "ground_truth_label_id": 1,
+      "ground_truth_label_name": "form",
+      "expected_label_id": 1,
+      "expected_label_name": "form",
+      "expected_top1_confidence": 0.9975360631942749,
+      "expected_top5": [
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.9975360631942749
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.0009395417291671038
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.0008723736391402781
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 0.00019255773804616183
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.0001327263453276828
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_34032_true_1_form.tiff",
+      "test_index": 34032,
+      "ground_truth_label_id": 1,
+      "ground_truth_label_name": "form",
+      "expected_label_id": 1,
+      "expected_label_name": "form",
+      "expected_top1_confidence": 0.9976192116737366,
+      "expected_top5": [
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.9976192116737366
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.0005788544076494873
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.0005714022554457188
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 0.00026916764909401536
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 0.00023254875850398093
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_12886_true_2_email.tiff",
+      "test_index": 12886,
+      "ground_truth_label_id": 2,
+      "ground_truth_label_name": "email",
+      "expected_label_id": 2,
+      "expected_label_name": "email",
+      "expected_top1_confidence": 0.9999809265136719,
+      "expected_top5": [
+        {
+          "label_id": 2,
+          "label_name": "email",
+          "confidence": 0.9999809265136719
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 8.672465810377616e-06
+        },
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 5.482999767991714e-06
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 1.5664789998481865e-06
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 1.0840980166904046e-06
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_19687_true_2_email.tiff",
+      "test_index": 19687,
+      "ground_truth_label_id": 2,
+      "ground_truth_label_name": "email",
+      "expected_label_id": 2,
+      "expected_label_name": "email",
+      "expected_top1_confidence": 0.9999667406082153,
+      "expected_top5": [
+        {
+          "label_id": 2,
+          "label_name": "email",
+          "confidence": 0.9999667406082153
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 2.1648782421834767e-05
+        },
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 9.084395969694015e-06
+        },
+        {
+          "label_id": 14,
+          "label_name": "resume",
+          "confidence": 7.23531400126376e-07
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 4.081567510638706e-07
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_32345_true_2_email.tiff",
+      "test_index": 32345,
+      "ground_truth_label_id": 2,
+      "ground_truth_label_name": "email",
+      "expected_label_id": 2,
+      "expected_label_name": "email",
+      "expected_top1_confidence": 0.32055193185806274,
+      "expected_top5": [
+        {
+          "label_id": 2,
+          "label_name": "email",
+          "confidence": 0.32055193185806274
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.31203970313072205
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.15669861435890198
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.11971056461334229
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 0.03446276858448982
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_12604_true_3_handwritten.tiff",
+      "test_index": 12604,
+      "ground_truth_label_id": 3,
+      "ground_truth_label_name": "handwritten",
+      "expected_label_id": 3,
+      "expected_label_name": "handwritten",
+      "expected_top1_confidence": 0.27286702394485474,
+      "expected_top5": [
+        {
+          "label_id": 3,
+          "label_name": "handwritten",
+          "confidence": 0.27286702394485474
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.2714795172214508
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.14458264410495758
+        },
+        {
+          "label_id": 2,
+          "label_name": "email",
+          "confidence": 0.1438441127538681
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.05937622860074043
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_28067_true_3_handwritten.tiff",
+      "test_index": 28067,
+      "ground_truth_label_id": 3,
+      "ground_truth_label_name": "handwritten",
+      "expected_label_id": 3,
+      "expected_label_name": "handwritten",
+      "expected_top1_confidence": 0.9998630285263062,
+      "expected_top5": [
+        {
+          "label_id": 3,
+          "label_name": "handwritten",
+          "confidence": 0.9998630285263062
+        },
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 0.00010566721903160214
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 9.20631555345608e-06
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 7.474824087694287e-06
+        },
+        {
+          "label_id": 2,
+          "label_name": "email",
+          "confidence": 2.8759425276803086e-06
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_35835_true_3_handwritten.tiff",
+      "test_index": 35835,
+      "ground_truth_label_id": 3,
+      "ground_truth_label_name": "handwritten",
+      "expected_label_id": 3,
+      "expected_label_name": "handwritten",
+      "expected_top1_confidence": 0.99982750415802,
+      "expected_top5": [
+        {
+          "label_id": 3,
+          "label_name": "handwritten",
+          "confidence": 0.99982750415802
+        },
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 6.058525468688458e-05
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 5.213464464759454e-05
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 3.0001085178810172e-05
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 1.1153577361255884e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_01711_true_4_advertisement.tiff",
+      "test_index": 1711,
+      "ground_truth_label_id": 4,
+      "ground_truth_label_name": "advertisement",
+      "expected_label_id": 4,
+      "expected_label_name": "advertisement",
+      "expected_top1_confidence": 0.9998043179512024,
+      "expected_top5": [
+        {
+          "label_id": 4,
+          "label_name": "advertisement",
+          "confidence": 0.9998043179512024
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 5.8455316320760176e-05
+        },
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 4.866484596277587e-05
+        },
+        {
+          "label_id": 3,
+          "label_name": "handwritten",
+          "confidence": 2.4707671400392428e-05
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 2.3023891117190942e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_03081_true_4_advertisement.tiff",
+      "test_index": 3081,
+      "ground_truth_label_id": 4,
+      "ground_truth_label_name": "advertisement",
+      "expected_label_id": 4,
+      "expected_label_name": "advertisement",
+      "expected_top1_confidence": 0.4021741449832916,
+      "expected_top5": [
+        {
+          "label_id": 4,
+          "label_name": "advertisement",
+          "confidence": 0.4021741449832916
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 0.40184396505355835
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.07214252650737762
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 0.04285326600074768
+        },
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 0.017547547817230225
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_12856_true_4_advertisement.tiff",
+      "test_index": 12856,
+      "ground_truth_label_id": 4,
+      "ground_truth_label_name": "advertisement",
+      "expected_label_id": 4,
+      "expected_label_name": "advertisement",
+      "expected_top1_confidence": 0.9997954964637756,
+      "expected_top5": [
+        {
+          "label_id": 4,
+          "label_name": "advertisement",
+          "confidence": 0.9997954964637756
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 6.941666651982814e-05
+        },
+        {
+          "label_id": 3,
+          "label_name": "handwritten",
+          "confidence": 5.7914563512895256e-05
+        },
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 4.893830555374734e-05
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 1.0084458153869491e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_17954_true_4_advertisement.tiff",
+      "test_index": 17954,
+      "ground_truth_label_id": 4,
+      "ground_truth_label_name": "advertisement",
+      "expected_label_id": 4,
+      "expected_label_name": "advertisement",
+      "expected_top1_confidence": 0.24551576375961304,
+      "expected_top5": [
+        {
+          "label_id": 4,
+          "label_name": "advertisement",
+          "confidence": 0.24551576375961304
+        },
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 0.24500855803489685
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 0.17358030378818512
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 0.1234634667634964
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.05503590404987335
+        }
+      ],
+      "selection_reason": "extra_ambiguous_correct"
+    },
+    {
+      "file": "test_04586_true_5_scientific_report.tiff",
+      "test_index": 4586,
+      "ground_truth_label_id": 5,
+      "ground_truth_label_name": "scientific_report",
+      "expected_label_id": 5,
+      "expected_label_name": "scientific_report",
+      "expected_top1_confidence": 0.9907487034797668,
+      "expected_top5": [
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.9907487034797668
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.006244212854653597
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.0010984218679368496
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.0006778264651075006
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.000664091669023037
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_05578_true_5_scientific_report.tiff",
+      "test_index": 5578,
+      "ground_truth_label_id": 5,
+      "ground_truth_label_name": "scientific_report",
+      "expected_label_id": 5,
+      "expected_label_name": "scientific_report",
+      "expected_top1_confidence": 0.24776548147201538,
+      "expected_top5": [
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.24776548147201538
+        },
+        {
+          "label_id": 2,
+          "label_name": "email",
+          "confidence": 0.2472694218158722
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.17221586406230927
+        },
+        {
+          "label_id": 3,
+          "label_name": "handwritten",
+          "confidence": 0.14925126731395721
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.07273626327514648
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_09439_true_5_scientific_report.tiff",
+      "test_index": 9439,
+      "ground_truth_label_id": 5,
+      "ground_truth_label_name": "scientific_report",
+      "expected_label_id": 5,
+      "expected_label_name": "scientific_report",
+      "expected_top1_confidence": 0.9889390468597412,
+      "expected_top5": [
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.9889390468597412
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.006004894617944956
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.00174056738615036
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.0012056633131578565
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.0008198701543733478
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_09655_true_6_scientific_publication.tiff",
+      "test_index": 9655,
+      "ground_truth_label_id": 6,
+      "ground_truth_label_name": "scientific_publication",
+      "expected_label_id": 6,
+      "expected_label_name": "scientific_publication",
+      "expected_top1_confidence": 0.9997053742408752,
+      "expected_top5": [
+        {
+          "label_id": 6,
+          "label_name": "scientific_publication",
+          "confidence": 0.9997053742408752
+        },
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 0.00014905695570632815
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.00010795854177558795
+        },
+        {
+          "label_id": 14,
+          "label_name": "resume",
+          "confidence": 1.3613174814963713e-05
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 8.256650289695244e-06
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_12216_true_6_scientific_publication.tiff",
+      "test_index": 12216,
+      "ground_truth_label_id": 6,
+      "ground_truth_label_name": "scientific_publication",
+      "expected_label_id": 6,
+      "expected_label_name": "scientific_publication",
+      "expected_top1_confidence": 0.9997190833091736,
+      "expected_top5": [
+        {
+          "label_id": 6,
+          "label_name": "scientific_publication",
+          "confidence": 0.9997190833091736
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.00018379212997388095
+        },
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 7.254904630826786e-05
+        },
+        {
+          "label_id": 14,
+          "label_name": "resume",
+          "confidence": 9.841085557127371e-06
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 6.509406375698745e-06
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_25069_true_6_scientific_publication.tiff",
+      "test_index": 25069,
+      "ground_truth_label_id": 6,
+      "ground_truth_label_name": "scientific_publication",
+      "expected_label_id": 6,
+      "expected_label_name": "scientific_publication",
+      "expected_top1_confidence": 0.39799925684928894,
+      "expected_top5": [
+        {
+          "label_id": 6,
+          "label_name": "scientific_publication",
+          "confidence": 0.39799925684928894
+        },
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 0.39384740591049194
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.08885172009468079
+        },
+        {
+          "label_id": 14,
+          "label_name": "resume",
+          "confidence": 0.087565578520298
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 0.012216008268296719
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_01023_true_7_specification.tiff",
+      "test_index": 1023,
+      "ground_truth_label_id": 7,
+      "ground_truth_label_name": "specification",
+      "expected_label_id": 7,
+      "expected_label_name": "specification",
+      "expected_top1_confidence": 0.999940037727356,
+      "expected_top5": [
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 0.999940037727356
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 3.064203337999061e-05
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 8.4123712440487e-06
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 6.174305326567264e-06
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 6.0385523283912335e-06
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_01815_true_7_specification.tiff",
+      "test_index": 1815,
+      "ground_truth_label_id": 7,
+      "ground_truth_label_name": "specification",
+      "expected_label_id": 7,
+      "expected_label_name": "specification",
+      "expected_top1_confidence": 0.32260602712631226,
+      "expected_top5": [
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 0.32260602712631226
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.31457167863845825
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.12499692291021347
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.09936355799436569
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.04386609420180321
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_04025_true_7_specification.tiff",
+      "test_index": 4025,
+      "ground_truth_label_id": 7,
+      "ground_truth_label_name": "specification",
+      "expected_label_id": 7,
+      "expected_label_name": "specification",
+      "expected_top1_confidence": 0.9999440908432007,
+      "expected_top5": [
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 0.9999440908432007
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 2.9479744625859894e-05
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 9.273577234125696e-06
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 8.062264896580018e-06
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 4.2855708670686e-06
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_16737_true_8_file_folder.tiff",
+      "test_index": 16737,
+      "ground_truth_label_id": 8,
+      "ground_truth_label_name": "file_folder",
+      "expected_label_id": 8,
+      "expected_label_name": "file_folder",
+      "expected_top1_confidence": 0.1657128632068634,
+      "expected_top5": [
+        {
+          "label_id": 8,
+          "label_name": "file_folder",
+          "confidence": 0.1657128632068634
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 0.16502328217029572
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.1450977325439453
+        },
+        {
+          "label_id": 6,
+          "label_name": "scientific_publication",
+          "confidence": 0.11039044708013535
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.07056813687086105
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_23919_true_8_file_folder.tiff",
+      "test_index": 23919,
+      "ground_truth_label_id": 8,
+      "ground_truth_label_name": "file_folder",
+      "expected_label_id": 8,
+      "expected_label_name": "file_folder",
+      "expected_top1_confidence": 0.9997251629829407,
+      "expected_top5": [
+        {
+          "label_id": 8,
+          "label_name": "file_folder",
+          "confidence": 0.9997251629829407
+        },
+        {
+          "label_id": 4,
+          "label_name": "advertisement",
+          "confidence": 6.425511674024165e-05
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 5.5452266678912565e-05
+        },
+        {
+          "label_id": 6,
+          "label_name": "scientific_publication",
+          "confidence": 2.775784014374949e-05
+        },
+        {
+          "label_id": 3,
+          "label_name": "handwritten",
+          "confidence": 2.2787316993344575e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_37038_true_8_file_folder.tiff",
+      "test_index": 37038,
+      "ground_truth_label_id": 8,
+      "ground_truth_label_name": "file_folder",
+      "expected_label_id": 8,
+      "expected_label_name": "file_folder",
+      "expected_top1_confidence": 0.9997381567955017,
+      "expected_top5": [
+        {
+          "label_id": 8,
+          "label_name": "file_folder",
+          "confidence": 0.9997381567955017
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 7.648783503100276e-05
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 7.216854282887653e-05
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 3.0294902899186127e-05
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 2.4328968720510602e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_24296_true_9_news_article.tiff",
+      "test_index": 24296,
+      "ground_truth_label_id": 9,
+      "ground_truth_label_name": "news_article",
+      "expected_label_id": 9,
+      "expected_label_name": "news_article",
+      "expected_top1_confidence": 0.30660566687583923,
+      "expected_top5": [
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 0.30660566687583923
+        },
+        {
+          "label_id": 6,
+          "label_name": "scientific_publication",
+          "confidence": 0.3000795245170593
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.14632095396518707
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 0.08763279020786285
+        },
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 0.04454280063509941
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_25888_true_9_news_article.tiff",
+      "test_index": 25888,
+      "ground_truth_label_id": 9,
+      "ground_truth_label_name": "news_article",
+      "expected_label_id": 9,
+      "expected_label_name": "news_article",
+      "expected_top1_confidence": 0.9999384880065918,
+      "expected_top5": [
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 0.9999384880065918
+        },
+        {
+          "label_id": 4,
+          "label_name": "advertisement",
+          "confidence": 2.4269089408335276e-05
+        },
+        {
+          "label_id": 6,
+          "label_name": "scientific_publication",
+          "confidence": 1.4967232345952652e-05
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 9.313719601777848e-06
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 2.581715762062231e-06
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_27686_true_9_news_article.tiff",
+      "test_index": 27686,
+      "ground_truth_label_id": 9,
+      "ground_truth_label_name": "news_article",
+      "expected_label_id": 9,
+      "expected_label_name": "news_article",
+      "expected_top1_confidence": 0.9999040365219116,
+      "expected_top5": [
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 0.9999040365219116
+        },
+        {
+          "label_id": 6,
+          "label_name": "scientific_publication",
+          "confidence": 2.0536377633106895e-05
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 1.9483137293718755e-05
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 1.1549256669241004e-05
+        },
+        {
+          "label_id": 3,
+          "label_name": "handwritten",
+          "confidence": 9.539052371110301e-06
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_01117_true_10_budget.tiff",
+      "test_index": 1117,
+      "ground_truth_label_id": 10,
+      "ground_truth_label_name": "budget",
+      "expected_label_id": 10,
+      "expected_label_name": "budget",
+      "expected_top1_confidence": 0.9989367127418518,
+      "expected_top5": [
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.9989367127418518
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.0004295330436434597
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.0003123069182038307
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 0.0001562140096211806
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 4.026323222205974e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_10918_true_10_budget.tiff",
+      "test_index": 10918,
+      "ground_truth_label_id": 10,
+      "ground_truth_label_name": "budget",
+      "expected_label_id": 10,
+      "expected_label_name": "budget",
+      "expected_top1_confidence": 0.2805579602718353,
+      "expected_top5": [
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.2805579602718353
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.27987176179885864
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 0.10739128291606903
+        },
+        {
+          "label_id": 4,
+          "label_name": "advertisement",
+          "confidence": 0.09225503355264664
+        },
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 0.08224344998598099
+        }
+      ],
+      "selection_reason": "extra_ambiguous_correct"
+    },
+    {
+      "file": "test_24764_true_10_budget.tiff",
+      "test_index": 24764,
+      "ground_truth_label_id": 10,
+      "ground_truth_label_name": "budget",
+      "expected_label_id": 10,
+      "expected_label_name": "budget",
+      "expected_top1_confidence": 0.44221919775009155,
+      "expected_top5": [
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.44221919775009155
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.4415495693683624
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.04360618069767952
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.04037385433912277
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 0.009884893894195557
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_37925_true_10_budget.tiff",
+      "test_index": 37925,
+      "ground_truth_label_id": 10,
+      "ground_truth_label_name": "budget",
+      "expected_label_id": 10,
+      "expected_label_name": "budget",
+      "expected_top1_confidence": 0.9983300566673279,
+      "expected_top5": [
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.9983300566673279
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.0008185157203115523
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 0.0004313939134590328
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.0002989326894748956
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 3.466910857241601e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_05683_true_11_invoice.tiff",
+      "test_index": 5683,
+      "ground_truth_label_id": 11,
+      "ground_truth_label_name": "invoice",
+      "expected_label_id": 11,
+      "expected_label_name": "invoice",
+      "expected_top1_confidence": 0.48885971307754517,
+      "expected_top5": [
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.48885971307754517
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.4875028431415558
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.013577328994870186
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 0.005539294797927141
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.0030175098218023777
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_24374_true_11_invoice.tiff",
+      "test_index": 24374,
+      "ground_truth_label_id": 11,
+      "ground_truth_label_name": "invoice",
+      "expected_label_id": 11,
+      "expected_label_name": "invoice",
+      "expected_top1_confidence": 0.9989473223686218,
+      "expected_top5": [
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.9989473223686218
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.0005163442110642791
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.00025325274327769876
+        },
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 0.00023769665858708322
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 1.784854794095736e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_35118_true_11_invoice.tiff",
+      "test_index": 35118,
+      "ground_truth_label_id": 11,
+      "ground_truth_label_name": "invoice",
+      "expected_label_id": 11,
+      "expected_label_name": "invoice",
+      "expected_top1_confidence": 0.9992052912712097,
+      "expected_top5": [
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.9992052912712097
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.0004482938093133271
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.00022155337501317263
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 4.550089579424821e-05
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 2.6351634005550295e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_09075_true_12_presentation.tiff",
+      "test_index": 9075,
+      "ground_truth_label_id": 12,
+      "ground_truth_label_name": "presentation",
+      "expected_label_id": 12,
+      "expected_label_name": "presentation",
+      "expected_top1_confidence": 0.9994805455207825,
+      "expected_top5": [
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 0.9994805455207825
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.0001265850878553465
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.0001088520948542282
+        },
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 9.030044020619243e-05
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 8.722147322259843e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_25682_true_12_presentation.tiff",
+      "test_index": 25682,
+      "ground_truth_label_id": 12,
+      "ground_truth_label_name": "presentation",
+      "expected_label_id": 12,
+      "expected_label_name": "presentation",
+      "expected_top1_confidence": 0.9992871880531311,
+      "expected_top5": [
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 0.9992871880531311
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 0.00018695794278755784
+        },
+        {
+          "label_id": 9,
+          "label_name": "news_article",
+          "confidence": 0.00012525574129540473
+        },
+        {
+          "label_id": 4,
+          "label_name": "advertisement",
+          "confidence": 9.652475273469463e-05
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 9.411959763383493e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_38525_true_12_presentation.tiff",
+      "test_index": 38525,
+      "ground_truth_label_id": 12,
+      "ground_truth_label_name": "presentation",
+      "expected_label_id": 12,
+      "expected_label_name": "presentation",
+      "expected_top1_confidence": 0.326617956161499,
+      "expected_top5": [
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 0.326617956161499
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 0.3254010081291199
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.11919823288917542
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.11097870767116547
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.06231872737407684
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_10688_true_13_questionnaire.tiff",
+      "test_index": 10688,
+      "ground_truth_label_id": 13,
+      "ground_truth_label_name": "questionnaire",
+      "expected_label_id": 13,
+      "expected_label_name": "questionnaire",
+      "expected_top1_confidence": 0.9991734623908997,
+      "expected_top5": [
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 0.9991734623908997
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.00024359268718399107
+        },
+        {
+          "label_id": 14,
+          "label_name": "resume",
+          "confidence": 0.00020873054745607078
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.00014246435603126884
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 8.639524457976222e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_23663_true_13_questionnaire.tiff",
+      "test_index": 23663,
+      "ground_truth_label_id": 13,
+      "ground_truth_label_name": "questionnaire",
+      "expected_label_id": 13,
+      "expected_label_name": "questionnaire",
+      "expected_top1_confidence": 0.33795732259750366,
+      "expected_top5": [
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 0.33795732259750366
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.337932825088501
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.15641666948795319
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.1328204870223999
+        },
+        {
+          "label_id": 12,
+          "label_name": "presentation",
+          "confidence": 0.016395460814237595
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_37757_true_13_questionnaire.tiff",
+      "test_index": 37757,
+      "ground_truth_label_id": 13,
+      "ground_truth_label_name": "questionnaire",
+      "expected_label_id": 13,
+      "expected_label_name": "questionnaire",
+      "expected_top1_confidence": 0.9991783499717712,
+      "expected_top5": [
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 0.9991783499717712
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 0.0004549776203930378
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.00018386903684586287
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.00013200151443015784
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 2.0542935089906678e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_02236_true_14_resume.tiff",
+      "test_index": 2236,
+      "ground_truth_label_id": 14,
+      "ground_truth_label_name": "resume",
+      "expected_label_id": 14,
+      "expected_label_name": "resume",
+      "expected_top1_confidence": 0.9999949932098389,
+      "expected_top5": [
+        {
+          "label_id": 14,
+          "label_name": "resume",
+          "confidence": 0.9999949932098389
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 1.9998590232717106e-06
+        },
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 9.539223810861586e-07
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 8.457089393232309e-07
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 4.2802562916222087e-07
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_03118_true_14_resume.tiff",
+      "test_index": 3118,
+      "ground_truth_label_id": 14,
+      "ground_truth_label_name": "resume",
+      "expected_label_id": 14,
+      "expected_label_name": "resume",
+      "expected_top1_confidence": 0.2569909691810608,
+      "expected_top5": [
+        {
+          "label_id": 14,
+          "label_name": "resume",
+          "confidence": 0.2569909691810608
+        },
+        {
+          "label_id": 8,
+          "label_name": "file_folder",
+          "confidence": 0.25577133893966675
+        },
+        {
+          "label_id": 2,
+          "label_name": "email",
+          "confidence": 0.09900218993425369
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 0.09655951708555222
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.0668748989701271
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    },
+    {
+      "file": "test_08993_true_14_resume.tiff",
+      "test_index": 8993,
+      "ground_truth_label_id": 14,
+      "ground_truth_label_name": "resume",
+      "expected_label_id": 14,
+      "expected_label_name": "resume",
+      "expected_top1_confidence": 0.9999902248382568,
+      "expected_top5": [
+        {
+          "label_id": 14,
+          "label_name": "resume",
+          "confidence": 0.9999902248382568
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 4.148002972215181e-06
+        },
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 1.5983865750968107e-06
+        },
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 1.226152107847156e-06
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 8.423972985838191e-07
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_30589_true_15_memo.tiff",
+      "test_index": 30589,
+      "ground_truth_label_id": 15,
+      "ground_truth_label_name": "memo",
+      "expected_label_id": 15,
+      "expected_label_name": "memo",
+      "expected_top1_confidence": 0.9956324696540833,
+      "expected_top5": [
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.9956324696540833
+        },
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 0.004063921514898539
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.00019369782239664346
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 5.700345354853198e-05
+        },
+        {
+          "label_id": 5,
+          "label_name": "scientific_report",
+          "confidence": 2.4073126041912474e-05
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_36935_true_15_memo.tiff",
+      "test_index": 36935,
+      "ground_truth_label_id": 15,
+      "ground_truth_label_name": "memo",
+      "expected_label_id": 15,
+      "expected_label_name": "memo",
+      "expected_top1_confidence": 0.9959731698036194,
+      "expected_top5": [
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.9959731698036194
+        },
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 0.0020781708881258965
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 0.000538811378646642
+        },
+        {
+          "label_id": 10,
+          "label_name": "budget",
+          "confidence": 0.0003379583067726344
+        },
+        {
+          "label_id": 7,
+          "label_name": "specification",
+          "confidence": 0.0003078463487327099
+        }
+      ],
+      "selection_reason": "easy_high_confidence_correct"
+    },
+    {
+      "file": "test_38922_true_15_memo.tiff",
+      "test_index": 38922,
+      "ground_truth_label_id": 15,
+      "ground_truth_label_name": "memo",
+      "expected_label_id": 15,
+      "expected_label_name": "memo",
+      "expected_top1_confidence": 0.20201803743839264,
+      "expected_top5": [
+        {
+          "label_id": 15,
+          "label_name": "memo",
+          "confidence": 0.20201803743839264
+        },
+        {
+          "label_id": 0,
+          "label_name": "letter",
+          "confidence": 0.20123277604579926
+        },
+        {
+          "label_id": 11,
+          "label_name": "invoice",
+          "confidence": 0.14778809249401093
+        },
+        {
+          "label_id": 1,
+          "label_name": "form",
+          "confidence": 0.14414799213409424
+        },
+        {
+          "label_id": 13,
+          "label_name": "questionnaire",
+          "confidence": 0.1393565833568573
+        }
+      ],
+      "selection_reason": "ambiguous_low_margin_correct"
+    }
+  ]
+}
