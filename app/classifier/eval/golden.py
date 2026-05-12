@@ -2,7 +2,6 @@
 import argparse
 import hashlib
 import json
-import sys
 from pathlib import Path
 
 import torch
@@ -14,16 +13,17 @@ from torchvision.models import convnext_tiny
 
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
+
     with path.open("rb") as f:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
+
     return h.hexdigest()
 
 
 def build_model(num_classes: int) -> torch.nn.Module:
-    # Important:
     # weights=None avoids downloading pretrained weights in CI.
-    # classifier.pt already contains the full fine-tuned state_dict.
+    # classifier.pt already contains the trained state_dict.
     model = convnext_tiny(weights=None)
     in_features = model.classifier[2].in_features
     model.classifier[2] = nn.Linear(in_features, num_classes)
@@ -75,8 +75,10 @@ def predict_one(model, image_path: Path, transform, class_names):
     confidence = float(top5_values[0].item())
 
     top5 = []
+
     for value, idx in zip(top5_values, top5_indices):
         label_id = int(idx.item())
+
         top5.append({
             "label_id": label_id,
             "label_name": class_names[label_id],
@@ -90,12 +92,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Replay golden RVL-CDIP predictions and fail if model/preprocessing changed."
     )
+
     parser.add_argument(
         "--tolerance",
         type=float,
         default=1e-6,
         help="Allowed absolute difference for top-1 confidence.",
     )
+
     args = parser.parse_args()
 
     paths = resolve_paths()
@@ -112,10 +116,13 @@ def main() -> int:
     ]
 
     missing = [str(p) for p in required_paths if not p.exists()]
+
     if missing:
         print("Missing required paths:")
+
         for p in missing:
             print(f" - {p}")
+
         return 1
 
     model_card = load_json(model_card_path)
@@ -151,7 +158,6 @@ def main() -> int:
     model.eval()
 
     failures = []
-
     items = golden_expected["items"]
 
     for item in items:
@@ -200,6 +206,7 @@ def main() -> int:
     print(f"Images checked: {len(items)}")
     print(f"Model SHA-256: {actual_sha}")
     print(f"Confidence tolerance: {args.tolerance}")
+
     return 0
 
 

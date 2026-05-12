@@ -1,6 +1,6 @@
 {
-  "model_name": "rvl_cdip_convnext_tiny_classifier",
-  "created_at_utc": "2026-05-11T18:52:59.197751+00:00",
+  "model_name": "rvl_cdip_convnext_tiny_classifier_epoch2",
+  "created_at_utc": "2026-05-12T17:39:22.245983+00:00",
   "dataset": {
     "name": "RVL-CDIP",
     "task": "document_layout_classification",
@@ -33,7 +33,7 @@
       224
     ],
     "grayscale_handling": "Input TIFFs are converted to RGB because ImageNet-pretrained ConvNeXt expects 3-channel input.",
-    "freeze_policy": "partial_unfreeze_last_convnext_stage_plus_classifier_full_train"
+    "freeze_policy": "partial_unfreeze_last_convnext_stage_plus_classifier_full_train_epoch2"
   },
   "preprocessing": {
     "resize": [
@@ -53,13 +53,14 @@
     ]
   },
   "training": {
-    "train_split_samples": 320000,
+    "train_split_samples_epoch1": 320000,
+    "train_split_samples_epoch2": 320000,
     "validation_split_samples": 40000,
     "batch_size": 32,
     "optimizer": "AdamW",
     "loss": "CrossEntropyLoss",
-    "training_note": "Started from frozen-backbone baseline, then partially unfroze the final ConvNeXt feature stage plus classifier head and trained on the full RVL-CDIP train split.",
-    "validation_metrics": {
+    "training_note": "Epoch 2 continued from the full 320k epoch 1 checkpoint using lower learning rates. Most ConvNeXt layers stayed frozen; final ConvNeXt stage and classifier head remained trainable.",
+    "epoch1_validation_metrics": {
       "loss": 0.7591873277664185,
       "top1_accuracy": 0.77325,
       "top5_accuracy": 0.956025,
@@ -178,11 +179,131 @@
           "accuracy": 0.655744176865377
         }
       ]
+    },
+    "epoch2_validation_metrics": {
+      "loss": 0.6844452261447906,
+      "top1_accuracy": 0.795225,
+      "top5_accuracy": 0.96225,
+      "total_samples": 40000,
+      "per_class_accuracy": [
+        {
+          "class_id": 0,
+          "class_name": "letter",
+          "correct": 1895,
+          "total": 2430,
+          "accuracy": 0.779835390946502
+        },
+        {
+          "class_id": 1,
+          "class_name": "form",
+          "correct": 1537,
+          "total": 2537,
+          "accuracy": 0.6058336618052819
+        },
+        {
+          "class_id": 2,
+          "class_name": "email",
+          "correct": 2344,
+          "total": 2530,
+          "accuracy": 0.9264822134387352
+        },
+        {
+          "class_id": 3,
+          "class_name": "handwritten",
+          "correct": 2189,
+          "total": 2434,
+          "accuracy": 0.899342645850452
+        },
+        {
+          "class_id": 4,
+          "class_name": "advertisement",
+          "correct": 2201,
+          "total": 2522,
+          "accuracy": 0.8727200634417129
+        },
+        {
+          "class_id": 5,
+          "class_name": "scientific_report",
+          "correct": 1483,
+          "total": 2508,
+          "accuracy": 0.5913078149920256
+        },
+        {
+          "class_id": 6,
+          "class_name": "scientific_publication",
+          "correct": 2176,
+          "total": 2526,
+          "accuracy": 0.8614410134600158
+        },
+        {
+          "class_id": 7,
+          "class_name": "specification",
+          "correct": 2194,
+          "total": 2531,
+          "accuracy": 0.8668510470169893
+        },
+        {
+          "class_id": 8,
+          "class_name": "file_folder",
+          "correct": 2312,
+          "total": 2451,
+          "accuracy": 0.9432884536923705
+        },
+        {
+          "class_id": 9,
+          "class_name": "news_article",
+          "correct": 2043,
+          "total": 2526,
+          "accuracy": 0.8087885985748219
+        },
+        {
+          "class_id": 10,
+          "class_name": "budget",
+          "correct": 1873,
+          "total": 2485,
+          "accuracy": 0.7537223340040241
+        },
+        {
+          "class_id": 11,
+          "class_name": "invoice",
+          "correct": 2123,
+          "total": 2576,
+          "accuracy": 0.8241459627329193
+        },
+        {
+          "class_id": 12,
+          "class_name": "presentation",
+          "correct": 1821,
+          "total": 2468,
+          "accuracy": 0.7378444084278768
+        },
+        {
+          "class_id": 13,
+          "class_name": "questionnaire",
+          "correct": 1608,
+          "total": 2517,
+          "accuracy": 0.6388557806912991
+        },
+        {
+          "class_id": 14,
+          "class_name": "resume",
+          "correct": 2111,
+          "total": 2426,
+          "accuracy": 0.870156636438582
+        },
+        {
+          "class_id": 15,
+          "class_name": "memo",
+          "correct": 1899,
+          "total": 2533,
+          "accuracy": 0.7497039084090011
+        }
+      ]
     }
   },
   "artifact": {
     "filename": "classifier.pt",
-    "sha256": "dc3737d3584d8ba8a405041cd97486835f15a56d3914914247d0b4002d1d4bb5"
+    "sha256": "219501b3dae668c7834376fb201468ea073614511be49e66bf1e7f6b4ce1f754"
   },
   "metrics": {
     "full_test_split": {
@@ -193,133 +314,133 @@
         {
           "split": "test",
           "index": 33669,
-          "error": "UnidentifiedImageError('cannot identify image file <_io.BytesIO object at 0x7dbca98136f0>')"
+          "error": "UnidentifiedImageError('cannot identify image file <_io.BytesIO object at 0x784d5ab24950>')"
         }
       ],
-      "test_evaluation_note": "Attempted full 40,000-image RVL-CDIP test split. Skipped 1 unreadable/corrupt TIFF during PIL decoding. Metrics computed on 39,999 successfully decoded images.",
-      "loss": 0.7626280097869752,
-      "top1_accuracy": 0.7698442461061527,
-      "top5_accuracy": 0.9554488862221555,
+      "test_evaluation_note": "Attempted full 40,000-image RVL-CDIP test split. Unreadable/corrupt TIFFs were skipped during PIL decoding and logged here.",
+      "loss": 0.688023513150354,
+      "top1_accuracy": 0.7942198554963874,
+      "top5_accuracy": 0.9619490487262181,
       "per_class_accuracy": [
         {
           "class_id": 0,
           "class_name": "letter",
-          "correct": 1892,
+          "correct": 1863,
           "total": 2464,
-          "accuracy": 0.7678571428571429
+          "accuracy": 0.7560876623376623
         },
         {
           "class_id": 1,
           "class_name": "form",
-          "correct": 1523,
+          "correct": 1566,
           "total": 2506,
-          "accuracy": 0.6077414205905826
+          "accuracy": 0.6249002394253791
         },
         {
           "class_id": 2,
           "class_name": "email",
-          "correct": 2290,
+          "correct": 2325,
           "total": 2516,
-          "accuracy": 0.910174880763116
+          "accuracy": 0.9240858505564388
         },
         {
           "class_id": 3,
           "class_name": "handwritten",
-          "correct": 2263,
+          "correct": 2286,
           "total": 2532,
-          "accuracy": 0.8937598736176935
+          "accuracy": 0.9028436018957346
         },
         {
           "class_id": 4,
           "class_name": "advertisement",
-          "correct": 2132,
+          "correct": 2184,
           "total": 2515,
-          "accuracy": 0.847713717693837
+          "accuracy": 0.868389662027833
         },
         {
           "class_id": 5,
           "class_name": "scientific_report",
-          "correct": 1275,
+          "correct": 1529,
           "total": 2498,
-          "accuracy": 0.5104083266613291
+          "accuracy": 0.6120896717373899
         },
         {
           "class_id": 6,
           "class_name": "scientific_publication",
-          "correct": 2171,
+          "correct": 2223,
           "total": 2571,
-          "accuracy": 0.8444185141968106
+          "accuracy": 0.8646441073512252
         },
         {
           "class_id": 7,
           "class_name": "specification",
-          "correct": 2055,
+          "correct": 2106,
           "total": 2472,
-          "accuracy": 0.8313106796116505
+          "accuracy": 0.8519417475728155
         },
         {
           "class_id": 8,
           "class_name": "file_folder",
-          "correct": 2368,
+          "correct": 2382,
           "total": 2527,
-          "accuracy": 0.9370795409576573
+          "accuracy": 0.9426197071626434
         },
         {
           "class_id": 9,
           "class_name": "news_article",
-          "correct": 1928,
+          "correct": 1945,
           "total": 2463,
-          "accuracy": 0.782785221274868
+          "accuracy": 0.7896873731222087
         },
         {
           "class_id": 10,
           "class_name": "budget",
-          "correct": 1782,
+          "correct": 1851,
           "total": 2505,
-          "accuracy": 0.7113772455089821
+          "accuracy": 0.7389221556886227
         },
         {
           "class_id": 11,
           "class_name": "invoice",
-          "correct": 1997,
+          "correct": 2032,
           "total": 2477,
-          "accuracy": 0.8062171982236577
+          "accuracy": 0.8203471941865159
         },
         {
           "class_id": 12,
           "class_name": "presentation",
-          "correct": 1865,
+          "correct": 1833,
           "total": 2489,
-          "accuracy": 0.7492969063881076
+          "accuracy": 0.7364403374849338
         },
         {
           "class_id": 13,
           "class_name": "questionnaire",
-          "correct": 1464,
+          "correct": 1559,
           "total": 2435,
-          "accuracy": 0.6012320328542095
+          "accuracy": 0.6402464065708419
         },
         {
           "class_id": 14,
           "class_name": "resume",
-          "correct": 2158,
+          "correct": 2205,
           "total": 2537,
-          "accuracy": 0.8506109578242018
+          "accuracy": 0.8691367757193535
         },
         {
           "class_id": 15,
           "class_name": "memo",
-          "correct": 1630,
+          "correct": 1879,
           "total": 2492,
-          "accuracy": 0.6540930979133226
+          "accuracy": 0.7540128410914928
         }
       ],
       "worst_class": {
         "class_id": 5,
         "class_name": "scientific_report",
-        "correct": 1275,
+        "correct": 1529,
         "total": 2498,
-        "accuracy": 0.5104083266613291
+        "accuracy": 0.6120896717373899
       }
     }
   },
