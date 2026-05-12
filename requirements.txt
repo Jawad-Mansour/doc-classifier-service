@@ -1,0 +1,6 @@
+redis
+rq
+minio
+paramiko
+hvac
+python-dotenv
