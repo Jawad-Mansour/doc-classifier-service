@@ -48,6 +48,36 @@ python3 app/classifier/eval/regenerate_golden_expected.py
 python3 app/classifier/eval/golden.py
 ```
 
+## Inference core
+- Added `app/classifier/inference/types.py`
+- Added `app/classifier/inference/preprocessing.py`
+- Added `app/classifier/inference/postprocessing.py`
+- Added `app/classifier/inference/model_validator.py`
+- Added `app/classifier/inference/predictor.py`
+- Added `app/classifier/inference/overlays.py`
+- Added `scripts/run_local_inference.py`
+- Added `tests/classifier/test_model_card_sha.py`
+- Added `tests/classifier/test_preprocessing.py`
+- Added `tests/classifier/test_predictor.py`
+- Real Redis, MinIO, and service integration is intentionally not implemented yet.
+- Worker integration is intentionally not implemented yet.
+- Redis and MinIO integration waits on contracts from Aya.
+- Prediction persistence waits on Mohamad's `prediction_service.record_prediction(...)` contract.
+
+## Inference core test commands
+```bash
+.venv/bin/python app/classifier/eval/golden.py
+.venv/bin/python scripts/run_local_inference.py
+.venv/bin/python -m pytest tests/classifier
+```
+
+## License and latency
+- `LICENSES.md` added/updated for RVL-CDIP academic/research use notes.
+- Added `scripts/measure_inference_latency.py` for local classifier latency measurement.
+- Command: `.venv/bin/python scripts/measure_inference_latency.py`
+- Output JSON: `tmp/inference_latency.json`
+- Real README latency numbers should be copied from the measured output after running locally or in Docker.
+
 ## Blocked
 - No current blocker for local CPU golden replay once the ML dependencies are installed.
 
