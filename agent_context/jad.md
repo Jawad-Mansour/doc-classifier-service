@@ -103,6 +103,14 @@ python3 app/classifier/eval/golden.py
 .venv/bin/python -m pytest --noconftest tests/classifier
 ```
 
+## Inference worker integration
+- Implemented `app/workers/inference_worker.py`.
+- Worker validates job payloads, downloads source image bytes, runs `DocumentClassifierPredictor`, creates an overlay PNG, uploads the overlay, and calls Mohamad's `prediction_service.create_prediction(...)`.
+- Worker now uses Aya's top-level `app.infra.blob.minio_client.MinioBlobClient` adapter after removing the duplicate nested infra folder.
+- Worker calls services for persistence and does not write SQL directly.
+- Added `tests/classifier/test_inference_worker.py` with fake blob storage, fake predictor, and fake prediction service.
+- Real worker runtime still depends on Aya's MinIO object availability and the database session environment used by Mohamad's service layer.
+
 ## Blocked
 - No current blocker for local CPU golden replay once the ML dependencies are installed.
 - Backend route tests are blocked until a working `settings` object is restored in `app/core/config.py`.
