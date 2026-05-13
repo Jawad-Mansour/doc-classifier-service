@@ -4,3 +4,4 @@ minio
 paramiko
 hvac
 python-dotenv
+pytest
