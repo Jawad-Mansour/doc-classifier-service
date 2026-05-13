@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -6,18 +7,19 @@ from app.api.schemas.common import ErrorResponse, HealthResponse, MessageRespons
 
 
 class BatchResponse(BaseModel):
-    id: str
-    name: str
+    id: int
+    request_id: str
     status: str
     created_at: datetime
 
 
 class PredictionResponse(BaseModel):
-    id: str
-    batch_id: str
+    id: int
+    batch_id: int
     label: str
     confidence: float
-    predicted_at: datetime
+    relabeled_by: str | None
+    created_at: datetime
 
 
 class PredictionUpdateRequest(BaseModel):
@@ -25,12 +27,11 @@ class PredictionUpdateRequest(BaseModel):
 
 
 class AuditLogResponse(BaseModel):
-    id: str
-    user_id: str
+    id: int
+    actor: str
     action: str
-    resource: str
+    target: str
     timestamp: datetime
-    details: dict | None = None
 
 
 class UserRoleUpdateRequest(BaseModel):
@@ -38,7 +39,8 @@ class UserRoleUpdateRequest(BaseModel):
 
 
 class UserRoleResponse(BaseModel):
-    id: str
+    id: int
+    email: str
     role: str
 
 
