@@ -1,33 +1,54 @@
-- name: Reset Docker stack
-  run: docker compose down -v --remove-orphans
+name: CI
 
-- name: Validate Docker Compose config
-  run: docker compose config
+on:
+  push:
+  pull_request:
 
-- name: Build Docker stack
-  run: docker compose build
+jobs:
+  infra-check:
+    runs-on: ubuntu-latest
 
-- name: Run database migrations
-  run: docker compose run --rm migrate
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
 
-- name: Run backend non-e2e tests in Docker
-  run: |
-    docker compose run \
-      -e REQUIRE_VAULT=false \
-      -e SEED_DEMO_USERS=false \
-      --rm inference-worker \
-      python -m pytest --ignore=tests/e2e
+      - name: Ensure model artifacts are present
+        run: git lfs pull
 
-- name: Run classifier tests in Docker
-  run: |
-    docker compose run --rm inference-worker \
-      python -m pytest --noconftest tests/classifier
+      - name: Prepare env file
+        run: cp .env.example .env
 
-- name: Run golden replay in Docker
-  run: |
-    docker compose run --rm inference-worker \
-      python app/classifier/eval/golden.py
+      - name: Reset Docker stack
+        run: docker compose down -v --remove-orphans
 
-- name: Stop Docker stack
-  if: always()
-  run: docker compose down -v --remove-orphans
+      - name: Validate Docker Compose config
+        run: docker compose config
+
+      - name: Build Docker stack
+        run: docker compose build
+
+      - name: Run database migrations
+        run: docker compose run --rm migrate
+
+      - name: Run backend non-e2e tests in Docker
+        run: |
+          docker compose run \
+            -e REQUIRE_VAULT=false \
+            -e SEED_DEMO_USERS=false \
+            --rm inference-worker \
+            python -m pytest --ignore=tests/e2e
+
+      - name: Run classifier tests in Docker
+        run: |
+          docker compose run --rm inference-worker \
+            python -m pytest --noconftest tests/classifier
+
+      - name: Run golden replay in Docker
+        run: |
+          docker compose run --rm inference-worker \
+            python app/classifier/eval/golden.py
+
+      - name: Stop Docker stack
+        if: always()
+        run: docker compose down -v --remove-orphans
