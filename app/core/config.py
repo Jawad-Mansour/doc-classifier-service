@@ -28,6 +28,7 @@ class Settings:
         "REDIS_URL",
         f"redis://{REDIS_HOST}:{REDIS_PORT}/0",
     )
+    QUEUE_NAME = os.getenv("QUEUE_NAME", "default")
 
     # MinIO
     MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
@@ -41,6 +42,8 @@ class Settings:
     SFTP_USERNAME = os.getenv("SFTP_USERNAME", "test")
     SFTP_PASSWORD = os.getenv("SFTP_PASSWORD", "test")
     SFTP_REMOTE_FOLDER = os.getenv("SFTP_REMOTE_FOLDER", "/upload")
+    SFTP_PROCESSED_FOLDER = os.getenv("SFTP_PROCESSED_FOLDER", "/processed")
+    SFTP_POLL_INTERVAL_SECONDS = int(os.getenv("SFTP_POLL_INTERVAL_SECONDS", "5"))
 
     # Vault
     VAULT_URL = os.getenv("VAULT_URL", "http://localhost:8200")

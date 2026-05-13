@@ -7,9 +7,14 @@ from sqlalchemy import create_engine
 from app.core.config import settings
 
 # casbin_sqlalchemy_adapter requires a synchronous engine
+_sync_connect_args = (
+    {"check_same_thread": False}
+    if settings.DATABASE_SYNC_URL.startswith("sqlite")
+    else {}
+)
 _sync_engine = create_engine(
-    settings.DATABASE_URL,
-    connect_args={"check_same_thread": False},
+    settings.DATABASE_SYNC_URL,
+    connect_args=_sync_connect_args,
 )
 
 

@@ -1,61 +1,139 @@
 services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_DB: ${POSTGRES_DB:-documents}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-app} -d $${POSTGRES_DB:-documents}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   redis:
     image: redis:7
     ports:
       - "6379:6379"
-
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
-      POSTGRES_DB: documents
-    ports:
-      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   minio:
     image: minio/minio
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minio
-      MINIO_ROOT_PASSWORD: minio123
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minio123}
     ports:
       - "9000:9000"
       - "9001:9001"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   sftp:
     image: atmoz/sftp
     ports:
       - "2222:22"
-    command: test:test:1001
+    command: ${SFTP_USERNAME:-test}:${SFTP_PASSWORD:-test}:1001::upload
 
   vault:
     image: hashicorp/vault
     environment:
-      VAULT_DEV_ROOT_TOKEN_ID: root
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-root}
     ports:
       - "8200:8200"
     command: server -dev
 
-  sftp-ingest:
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment: &app_env
+      APP_NAME: ${APP_NAME:-Document Classifier Service}
+      APP_VERSION: ${APP_VERSION:-0.1.0}
+      DEBUG: ${DEBUG:-true}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://app:app@postgres:5432/documents}
+      DATABASE_SYNC_URL: ${DATABASE_SYNC_URL:-postgresql+psycopg2://app:app@postgres:5432/documents}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      QUEUE_NAME: ${QUEUE_NAME:-default}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio:9000}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minio}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minio123}
+      MINIO_BUCKET: ${MINIO_BUCKET:-documents}
+      SFTP_HOST: ${SFTP_HOST:-sftp}
+      SFTP_PORT: ${SFTP_PORT:-22}
+      SFTP_USERNAME: ${SFTP_USERNAME:-test}
+      SFTP_PASSWORD: ${SFTP_PASSWORD:-test}
+      SFTP_REMOTE_FOLDER: ${SFTP_REMOTE_FOLDER:-/upload}
+      SFTP_PROCESSED_FOLDER: ${SFTP_PROCESSED_FOLDER:-/processed}
+      VAULT_URL: ${VAULT_URL:-http://vault:8200}
+      VAULT_TOKEN: ${VAULT_TOKEN:-root}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-change-me}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment: *app_env
+    command: alembic upgrade head
+    volumes:
+      - .:/app
+
+  sftp-ingest-worker:
     build:
       context: .
       dockerfile: docker/ingest.Dockerfile
     depends_on:
-      - redis
-      - minio
-      - sftp
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      sftp:
+        condition: service_started
+    environment: *app_env
+    volumes:
+      - .:/app
 
-      MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: minio
-      MINIO_SECRET_KEY: minio123
-      MINIO_BUCKET: documents
-
-      SFTP_HOST: sftp
-      SFTP_PORT: 22
-      SFTP_USERNAME: test
-      SFTP_PASSWORD: test
-      SFTP_REMOTE_FOLDER: /upload
+  inference-worker:
+    build:
+      context: .
+      dockerfile: docker/worker.Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment: *app_env
+    command: rq worker default --url redis://redis:6379/0
+    volumes:
+      - .:/app
