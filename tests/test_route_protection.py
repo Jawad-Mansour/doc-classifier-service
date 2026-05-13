@@ -10,7 +10,7 @@ from app.auth.users import UserDB
 @pytest.fixture
 def admin_user() -> UserDB:
     """Create a test admin user."""
-    user = UserDB(id="admin1", email="admin@test.com", hashed_password="hashed")
+    user = UserDB(id=1, email="admin@test.com", hashed_password="hashed")
     user.role = "admin"
     return user
 
@@ -18,7 +18,7 @@ def admin_user() -> UserDB:
 @pytest.fixture
 def reviewer_user() -> UserDB:
     """Create a test reviewer user."""
-    user = UserDB(id="reviewer1", email="reviewer@test.com", hashed_password="hashed")
+    user = UserDB(id=2, email="reviewer@test.com", hashed_password="hashed")
     user.role = "reviewer"
     return user
 
@@ -26,7 +26,7 @@ def reviewer_user() -> UserDB:
 @pytest.fixture
 def auditor_user() -> UserDB:
     """Create a test auditor user."""
-    user = UserDB(id="auditor1", email="auditor@test.com", hashed_password="hashed")
+    user = UserDB(id=3, email="auditor@test.com", hashed_password="hashed")
     user.role = "auditor"
     return user
 

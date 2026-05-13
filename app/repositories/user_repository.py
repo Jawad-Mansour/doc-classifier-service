@@ -25,6 +25,8 @@ async def create(
     email: str,
     hashed_password: str,
     role: str,
+    *,
+    is_verified: bool = False,
 ) -> User:
     user = User(
         email=email,
@@ -32,7 +34,7 @@ async def create(
         role=role,
         is_active=True,
         is_superuser=False,
-        is_verified=False,
+        is_verified=is_verified,
     )
     session.add(user)
     await session.flush()

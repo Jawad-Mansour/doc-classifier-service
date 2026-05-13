@@ -39,7 +39,7 @@ async def create_prediction(
     )
     await audit_service.log_event(session, "system", "prediction_created", f"document:{document_id}")
     await session.commit()
-    await cache_service.invalidate_predictions()
+    await cache_service.invalidate_prediction_write(batch_id)
     return PredictionDomain.model_validate(prediction)
 
 
@@ -70,5 +70,5 @@ async def relabel(
     )
     await audit_service.log_event(session, reviewer, "relabel", f"prediction:{prediction_id}")
     await session.commit()
-    await cache_service.invalidate_predictions()
+    await cache_service.invalidate_prediction_write(updated.batch_id)
     return PredictionDomain.model_validate(updated)

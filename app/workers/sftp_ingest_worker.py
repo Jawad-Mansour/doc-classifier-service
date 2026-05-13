@@ -1,11 +1,11 @@
 import asyncio
 import inspect
-import time
 from pathlib import PurePosixPath
 from typing import Any
 from uuid import uuid4
 
 from app.core.config import settings
+from app.core.constants import BatchStatus
 from app.infra.blob.minio_client import blob_client as default_blob_client
 from app.infra.queue.rq_client import enqueue_inference_job
 from app.infra.sftp.client import SFTPClient, is_valid_tiff
@@ -82,6 +82,7 @@ async def process_sftp_file(
         "request_id": request_id,
     }
     queue_job_id = queue_enqueue(payload)
+    await _maybe_await(batch_service.update_status(session, batch_id, BatchStatus.PROCESSING))
 
     if hasattr(sftp_client, "move_to_processed"):
         sftp_client.move_to_processed(filename)
@@ -151,17 +152,20 @@ async def _run_once_with_runtime_clients() -> list[dict[str, Any]]:
             )
 
 
+async def _run_forever(poll_interval: int) -> None:
+    while True:
+        try:
+            await _run_once_with_runtime_clients()
+        except Exception as exc:
+            print(f"SFTP ingest error: {exc}")
+        await asyncio.sleep(poll_interval)
+
+
 def run(poll_interval_seconds: int | None = None) -> None:
     poll_interval = poll_interval_seconds or settings.SFTP_POLL_INTERVAL_SECONDS
     print(f"SFTP ingest worker started poll_interval_seconds={poll_interval}")
 
-    while True:
-        try:
-            asyncio.run(_run_once_with_runtime_clients())
-        except Exception as exc:
-            print(f"SFTP ingest error: {exc}")
-
-        time.sleep(poll_interval)
+    asyncio.run(_run_forever(poll_interval))
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ from app.services import audit_service, cache_service
 async def create_batch(session: AsyncSession, request_id: str) -> BatchDomain:
     batch = await batch_repository.create(session, request_id)
     await session.commit()
+    await cache_service.invalidate_batches()
     return BatchDomain.model_validate(batch)
 
 
@@ -22,6 +23,7 @@ async def add_document(
 ) -> DocumentDomain:
     doc = await document_repository.create(session, batch_id, filename, blob_bucket, blob_path)
     await session.commit()
+    await cache_service.invalidate_batch(batch_id)
     return DocumentDomain.model_validate(doc)
 
 

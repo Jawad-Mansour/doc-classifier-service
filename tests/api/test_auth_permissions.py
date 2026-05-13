@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 
 import app.api.routers.batches as batches_router
 import app.api.routers.predictions as predictions_router
@@ -13,8 +13,9 @@ from app.core import startup as startup_module
 
 
 def make_user(role: str) -> UserRead:
+    ids = {"admin": 1, "reviewer": 2, "auditor": 3}
     user = UserRead(
-        id=f"user-{role}",
+        id=ids.get(role, 99),
         email=f"{role}@example.com",
         is_active=True,
         is_superuser=(role == "admin"),
@@ -58,7 +59,7 @@ def test_wrong_role_returns_403(client: TestClient):
     override_current_user(make_user("reviewer"))
 
     response = client.patch(
-        "/api/v1/admin/users/target-user/role",
+        "/api/v1/admin/users/42/role",
         json={"role": "auditor"},
     )
 
@@ -70,19 +71,19 @@ def test_admin_can_change_user_role(client: TestClient, request_headers: dict, m
     admin = make_user("admin")
     override_current_user(admin)
 
-    async def mock_change_role(user_id: str, role: str) -> UserRoleResponse:
-        return UserRoleResponse(id=user_id, role=role)
+    async def mock_toggle_role(session, user_id: int, role: str, actor_email: str) -> UserRoleResponse:
+        return UserRoleResponse(id=user_id, email="target@example.com", role=role)
 
-    monkeypatch.setattr(users_router, "change_role", mock_change_role)
+    monkeypatch.setattr(users_router, "toggle_role", mock_toggle_role)
 
     response = client.patch(
-        "/api/v1/admin/users/target-user/role",
+        "/api/v1/admin/users/42/role",
         json={"role": "reviewer"},
         headers=request_headers,
     )
 
     assert response.status_code == 200
-    assert response.json() == {"id": "target-user", "role": "reviewer"}
+    assert response.json() == {"id": 42, "email": "target@example.com", "role": "reviewer"}
     assert response.headers["X-Request-ID"] == "test-request-123"
 
 
@@ -90,19 +91,20 @@ def test_reviewer_can_relabel_low_confidence_prediction(client: TestClient, requ
     reviewer = make_user("reviewer")
     override_current_user(reviewer)
 
-    async def mock_relabel(prediction_id: str, new_label: str) -> PredictionResponse:
+    async def mock_relabel(session, prediction_id: int, new_label: str, actor_email: str) -> PredictionResponse:
         return PredictionResponse(
             id=prediction_id,
-            batch_id="batch_1",
+            batch_id=1,
             label=new_label,
             confidence=0.42,
-            predicted_at="2026-05-12T00:00:00Z",
+            relabeled_by=actor_email,
+            created_at="2026-05-12T00:00:00Z",
         )
 
     monkeypatch.setattr(predictions_router, "relabel", mock_relabel)
 
     response = client.patch(
-        "/api/v1/predictions/pred-1",
+        "/api/v1/predictions/1",
         json={"new_label": "approved"},
         headers=request_headers,
     )
@@ -117,7 +119,7 @@ def test_auditor_cannot_relabel(client: TestClient):
     override_current_user(auditor)
 
     response = client.patch(
-        "/api/v1/predictions/pred-1",
+        "/api/v1/predictions/1",
         json={"new_label": "approved"},
     )
 
@@ -133,18 +135,29 @@ def test_me_returns_current_user(client: TestClient):
 
     assert response.status_code == 200
     assert response.json()["email"] == "reviewer@example.com"
-    assert response.json()["id"] == "user-reviewer"
+    assert response.json()["id"] == 2
+
+
+def test_user_without_role_gets_403_on_batches(client: TestClient):
+    user = make_user("auditor")
+    user.role = None
+    override_current_user(user)
+
+    response = client.get("/api/v1/batches")
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Role 'None' cannot read batches"
 
 
 def test_batches_works_for_authorized_roles(client: TestClient, request_headers: dict, monkeypatch):
     reviewer = make_user("reviewer")
     override_current_user(reviewer)
 
-    async def mock_list_batches() -> list[BatchResponse]:
+    async def mock_list_batches(session) -> list[BatchResponse]:
         return [
             BatchResponse(
-                id="batch_1",
-                name="Batch One",
+                id=1,
+                request_id="test-request-123",
                 status="pending",
                 created_at="2026-05-12T00:00:00Z",
             )
@@ -155,7 +168,7 @@ def test_batches_works_for_authorized_roles(client: TestClient, request_headers:
     response = client.get("/api/v1/batches", headers=request_headers)
 
     assert response.status_code == 200
-    assert response.json()[0]["id"] == "batch_1"
+    assert response.json()[0]["id"] == 1
     assert response.headers["X-Request-ID"] == "test-request-123"
 
 
@@ -164,7 +177,7 @@ def test_validation_errors_return_422(client: TestClient):
     override_current_user(reviewer)
 
     response = client.patch(
-        "/api/v1/predictions/pred-1",
+        "/api/v1/predictions/1",
         json={"label": "approved"},
     )
 

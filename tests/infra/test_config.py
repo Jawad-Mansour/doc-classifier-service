@@ -8,6 +8,7 @@ def test_config_exposes_required_infra_settings():
         "DEBUG",
         "DATABASE_URL",
         "DATABASE_SYNC_URL",
+        "DATABASE_PASSWORD",
         "REDIS_URL",
         "REDIS_HOST",
         "REDIS_PORT",
@@ -24,9 +25,18 @@ def test_config_exposes_required_infra_settings():
         "SFTP_PROCESSED_FOLDER",
         "VAULT_URL",
         "VAULT_TOKEN",
+        "REQUIRE_VAULT",
+        "VAULT_SECRET_BASE_PATH",
         "JWT_SECRET_KEY",
         "JWT_ALGORITHM",
         "ACCESS_TOKEN_EXPIRE_MINUTES",
+        "SEED_DEMO_USERS",
+        "DEMO_ADMIN_EMAIL",
+        "DEMO_ADMIN_PASSWORD",
+        "DEMO_REVIEWER_EMAIL",
+        "DEMO_REVIEWER_PASSWORD",
+        "DEMO_AUDITOR_EMAIL",
+        "DEMO_AUDITOR_PASSWORD",
     ]
 
     for name in required:

@@ -7,14 +7,13 @@ from app.infra.queue.redis_client import redis_connection
 
 
 classification_queue = Queue(settings.QUEUE_NAME, connection=redis_connection)
+INFERENCE_JOB_PATH = "app.workers.inference_worker.classify_document_job"
 
 
 def enqueue_inference_job(payload: dict[str, Any]) -> str:
-    from app.workers.inference_worker import classify_document_job
-
     job_id = str(payload["job_id"]) if payload.get("job_id") else None
     job = classification_queue.enqueue(
-        classify_document_job,
+        INFERENCE_JOB_PATH,
         payload,
         job_id=job_id,
     )

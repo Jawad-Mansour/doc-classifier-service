@@ -1,5 +1,14 @@
 import os
 
+from sqlalchemy.engine import make_url
+
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.lower() in {"1", "true", "yes", "on"}
+
 
 class Settings:
     # App
@@ -20,6 +29,7 @@ class Settings:
         "DATABASE_SYNC_URL",
         "postgresql+psycopg2://postgres:postgres@localhost:5432/doc_classifier",
     )
+    DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD", "")
 
     # Redis
     REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -48,13 +58,34 @@ class Settings:
     # Vault
     VAULT_URL = os.getenv("VAULT_URL", "http://localhost:8200")
     VAULT_TOKEN = os.getenv("VAULT_TOKEN", "root")
+    REQUIRE_VAULT = _env_bool("REQUIRE_VAULT", False)
+    VAULT_SECRET_BASE_PATH = os.getenv("VAULT_SECRET_BASE_PATH", "secret/data/doc-classifier")
 
     # Auth / JWT
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-change-me")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret-key-for-local-demo-minimum-32")
     JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES = int(
         os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
     )
+
+    # Local/demo auth seed users. Startup only uses these when DEBUG and SEED_DEMO_USERS are true.
+    SEED_DEMO_USERS = _env_bool("SEED_DEMO_USERS", False)
+    DEMO_ADMIN_EMAIL = os.getenv("DEMO_ADMIN_EMAIL", "admin@example.com")
+    DEMO_ADMIN_PASSWORD = os.getenv("DEMO_ADMIN_PASSWORD", "Admin123!")
+    DEMO_REVIEWER_EMAIL = os.getenv("DEMO_REVIEWER_EMAIL", "reviewer@example.com")
+    DEMO_REVIEWER_PASSWORD = os.getenv("DEMO_REVIEWER_PASSWORD", "Reviewer123!")
+    DEMO_AUDITOR_EMAIL = os.getenv("DEMO_AUDITOR_EMAIL", "auditor@example.com")
+    DEMO_AUDITOR_PASSWORD = os.getenv("DEMO_AUDITOR_PASSWORD", "Auditor123!")
+
+    def set_database_password(self, password: str) -> None:
+        self.DATABASE_PASSWORD = password
+        self.DATABASE_URL = _set_url_password(self.DATABASE_URL, password)
+        self.DATABASE_SYNC_URL = _set_url_password(self.DATABASE_SYNC_URL, password)
+
+
+def _set_url_password(url: str, password: str) -> str:
+    parsed = make_url(url)
+    return parsed.set(password=password).render_as_string(hide_password=False)
 
 
 settings = Settings()

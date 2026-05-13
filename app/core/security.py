@@ -31,7 +31,12 @@ def _normalize_origins(value: Any) -> list[str]:
 class SecuritySettings(BaseModel):
     """Security configuration loaded from environment variables."""
 
-    SECRET_KEY: str = Field(default_factory=lambda: os.getenv("SECRET_KEY", "change-me-in-production"))
+    SECRET_KEY: str = Field(
+        default_factory=lambda: os.getenv(
+            "SECRET_KEY",
+            os.getenv("JWT_SECRET_KEY", "change-me-in-production"),
+        )
+    )
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     JWT_AUDIENCE: list[str] = Field(default_factory=lambda: ["doc-classifier-service"])
@@ -44,6 +49,9 @@ class SecuritySettings(BaseModel):
     CASBIN_ENABLE: bool = False
     CASBIN_MODEL_PATH: str = "app/auth/rbac_model.conf"
     CASBIN_POLICY_PATH: str = "app/auth/rbac_policy.csv"
+
+    def set_secret_key(self, secret_key: str) -> None:
+        self.SECRET_KEY = secret_key
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod

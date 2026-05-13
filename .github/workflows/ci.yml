@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  infra-check:
+  docker-backend-check:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,34 +16,34 @@ jobs:
       - name: Ensure model artifacts are present
         run: git lfs pull
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Compile Aya files
+      - name: Prepare env file
         run: |
-          python -m py_compile app/core/config.py
-          python -m py_compile app/core/startup.py
-          python -m py_compile app/infra/blob/minio_client.py
-          python -m py_compile app/infra/queue/redis_client.py
-          python -m py_compile app/infra/queue/rq_queue.py
-          python -m py_compile app/infra/queue/rq_client.py
-          python -m py_compile app/infra/cache/redis_cache.py
-          python -m py_compile app/infra/vault/vault_client.py
-          python -m py_compile app/infra/sftp/client.py
-          python -m py_compile app/infra/sftp/watcher.py
-          python -m py_compile app/infra/logging/logger.py
-          python -m py_compile app/workers/sftp_ingest_worker.py
+          cp .env.example .env
 
-      - name: Run smoke tests
-        run: pytest tests/smoke
+      - name: Validate Docker Compose config
+        run: docker compose config
 
-      - name: Run classifier tests
-        run: pytest --noconftest tests/classifier
+      - name: Build Docker stack
+        run: docker compose build
 
-      - name: Run golden replay
-        run: python app/classifier/eval/golden.py
+      - name: Run backend non-e2e tests in Docker
+        run: |
+          docker compose run \
+            -e REQUIRE_VAULT=false \
+            -e SEED_DEMO_USERS=false \
+            --rm inference-worker \
+            python -m pytest --ignore=tests/e2e
+
+      - name: Run classifier tests in Docker
+        run: |
+          docker compose run --rm inference-worker \
+            python -m pytest --noconftest tests/classifier
+
+      - name: Run golden replay in Docker
+        run: |
+          docker compose run --rm inference-worker \
+            python app/classifier/eval/golden.py
+
+      - name: Stop Docker stack
+        if: always()
+        run: docker compose down -v

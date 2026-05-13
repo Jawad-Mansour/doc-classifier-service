@@ -56,8 +56,9 @@ async def test_toggle_role_succeeds_when_multiple_admins():
         patch("app.services.user_service.user_repository.get_by_id", return_value=admin),
         patch("app.services.user_service.user_repository.count_by_role", return_value=2),
         patch("app.services.user_service.user_repository.update_role", return_value=demoted),
+        patch("app.services.user_service.RoleService.assign_role", new_callable=AsyncMock),
         patch("app.services.user_service.audit_service.log_event", new_callable=AsyncMock),
-        patch("app.services.user_service.cache_service.invalidate_user", new_callable=AsyncMock),
+        patch("app.services.user_service.cache_service.invalidate_auth_user", new_callable=AsyncMock),
     ):
         result = await user_service.toggle_role(session, 2, "auditor", "superadmin@example.com")
 
@@ -75,10 +76,12 @@ async def test_toggle_role_calls_audit_and_cache_on_success():
         patch("app.services.user_service.user_repository.get_by_id", return_value=admin),
         patch("app.services.user_service.user_repository.count_by_role", return_value=3),
         patch("app.services.user_service.user_repository.update_role", return_value=updated),
+        patch("app.services.user_service.RoleService.assign_role", new_callable=AsyncMock) as mock_assign_role,
         patch("app.services.user_service.audit_service.log_event", new_callable=AsyncMock) as mock_audit,
-        patch("app.services.user_service.cache_service.invalidate_user", new_callable=AsyncMock) as mock_cache,
+        patch("app.services.user_service.cache_service.invalidate_auth_user", new_callable=AsyncMock) as mock_cache,
     ):
         await user_service.toggle_role(session, 3, "reviewer", "boss@example.com")
 
+    mock_assign_role.assert_called_once_with("3", "reviewer")
     mock_audit.assert_called_once_with(session, "boss@example.com", "role_change", "user:3")
-    mock_cache.assert_called_once_with(3)
+    mock_cache.assert_called_once_with("3")
