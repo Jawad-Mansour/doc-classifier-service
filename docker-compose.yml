@@ -1,0 +1,61 @@
+services:
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: documents
+    ports:
+      - "5432:5432"
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  sftp:
+    image: atmoz/sftp
+    ports:
+      - "2222:22"
+    command: test:test:1001
+
+  vault:
+    image: hashicorp/vault
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: root
+    ports:
+      - "8200:8200"
+    command: server -dev
+
+  sftp-ingest:
+    build:
+      context: .
+      dockerfile: docker/ingest.Dockerfile
+    depends_on:
+      - redis
+      - minio
+      - sftp
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+      MINIO_BUCKET: documents
+
+      SFTP_HOST: sftp
+      SFTP_PORT: 22
+      SFTP_USERNAME: test
+      SFTP_PASSWORD: test
+      SFTP_REMOTE_FOLDER: /upload
