@@ -15,6 +15,7 @@
 - Added `migrate` service to Docker Compose.
 - Switched Docker Compose values to `${VAR:-default}` interpolation so demo defaults can be overridden from environment.
 - Fixed Casbin sync-engine startup config to use `DATABASE_SYNC_URL`; sqlite-only `check_same_thread` is now only used for sqlite URLs.
+- Updated CI checkout to fetch Git LFS artifacts so `classifier.pt` is the real epoch-2 model file, not the LFS pointer.
 - Removed duplicate nested folders: `app/infra/infra/`, `docker/docker/`, and repo-root `jawad/`.
 - Added infra import/config tests that do not require live Docker services.
 
@@ -50,6 +51,7 @@
 .venv/bin/python -m pytest --noconftest tests/classifier
 .venv/bin/python app/classifier/eval/golden.py
 .venv/bin/python -m py_compile app/core/config.py app/auth/casbin.py app/workers/sftp_ingest_worker.py
+git lfs pull
 .venv/bin/python - <<'PY'
 from app.core.config import settings
 print("DATABASE_URL:", settings.DATABASE_URL)
