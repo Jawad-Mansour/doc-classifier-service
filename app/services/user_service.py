@@ -33,3 +33,9 @@ async def toggle_role(
     await session.commit()
     await cache_service.invalidate_user(user_id)
     return UserDomain.model_validate(updated)
+
+
+async def change_role(user_id: str, role: str) -> UserDomain:
+    raise NotImplementedError(
+        "change_role requires a database session; use toggle_role(session, user_id, role, actor)."
+    )
