@@ -26,6 +26,7 @@ from app.core.exceptions import (
 from app.core.logging import configure_logging
 from app.core.security import security_settings
 from app.core.startup import check_policies_initialized, init_app
+from app.db.session import dispose_engine
 
 
 logger = logging.getLogger("app.main")
@@ -79,6 +80,7 @@ def create_app() -> FastAPI:
     @app.on_event("shutdown")
     async def shutdown_event():
         logger.info("Shutting down application")
+        await dispose_engine()
 
     return app
 

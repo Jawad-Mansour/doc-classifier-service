@@ -9,6 +9,7 @@ from app.auth.casbin import RESOURCE_PREDICTIONS, ACTION_READ, ACTION_UPDATE
 from app.auth.users import UserRead
 from app.db.session import get_session
 from app.exceptions import PredictionNotFound, UnauthorizedRelabel
+from app.services import cache_service
 from app.services.prediction_service import get_recent, relabel
 from fastapi_cache.decorator import cache
 
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/predictions", tags=["predictions"])
 
 
 @router.get("/recent", response_model=list[PredictionResponse])
-@cache(expire=60, namespace="predictions:recent")
+@cache(expire=60, namespace=cache_service.PREDICTIONS_RECENT_NAMESPACE)
 async def get_recent_predictions(
     user: UserRead = Depends(require_permission(RESOURCE_PREDICTIONS, ACTION_READ)),
     session: AsyncSession = Depends(get_session),

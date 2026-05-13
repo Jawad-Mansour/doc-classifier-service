@@ -9,6 +9,7 @@ from app.auth.casbin import RESOURCE_BATCHES, ACTION_READ
 from app.auth.users import UserRead
 from app.db.session import get_session
 from app.exceptions import BatchNotFound
+from app.services import cache_service
 from app.services.batch_service import get_batch, list_batches
 from fastapi_cache.decorator import cache
 
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/batches", tags=["batches"])
 
 
 @router.get("", response_model=list[BatchResponse])
-@cache(expire=60, namespace="batches")
+@cache(expire=60, namespace=cache_service.BATCHES_NAMESPACE)
 async def list_batches_route(
     user: UserRead = Depends(require_permission(RESOURCE_BATCHES, ACTION_READ)),
     session: AsyncSession = Depends(get_session),
@@ -25,7 +26,7 @@ async def list_batches_route(
 
 
 @router.get("/{bid}", response_model=BatchResponse)
-@cache(expire=60)
+@cache(expire=60, namespace=cache_service.BATCH_NAMESPACE, key_builder=cache_service.batch_detail_key_builder)
 async def get_batch_route(
     bid: int = Path(...),
     user: UserRead = Depends(require_permission(RESOURCE_BATCHES, ACTION_READ)),

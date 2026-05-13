@@ -6,18 +6,6 @@ from sqlalchemy import create_engine
 
 from app.core.config import settings
 
-# casbin_sqlalchemy_adapter requires a synchronous engine
-_sync_connect_args = (
-    {"check_same_thread": False}
-    if settings.DATABASE_SYNC_URL.startswith("sqlite")
-    else {}
-)
-_sync_engine = create_engine(
-    settings.DATABASE_SYNC_URL,
-    connect_args=_sync_connect_args,
-)
-
-
 # RBAC model definition
 RBAC_MODEL = """
 [request_definition]
@@ -56,6 +44,21 @@ ACTION_MANAGE_ROLES = "manage_roles"
 
 # Global enforcer instance
 _enforcer: casbin.Enforcer | None = None
+_sync_engine = None
+
+
+def _create_sync_engine():
+    global _sync_engine
+    if _sync_engine is not None:
+        return _sync_engine
+    # casbin_sqlalchemy_adapter requires a synchronous engine.
+    connect_args = (
+        {"check_same_thread": False}
+        if settings.DATABASE_SYNC_URL.startswith("sqlite")
+        else {}
+    )
+    _sync_engine = create_engine(settings.DATABASE_SYNC_URL, connect_args=connect_args)
+    return _sync_engine
 
 
 def init_casbin_enforcer() -> casbin.Enforcer:
@@ -64,7 +67,7 @@ def init_casbin_enforcer() -> casbin.Enforcer:
     if _enforcer is not None:
         return _enforcer
 
-    adapter = Adapter(_sync_engine)
+    adapter = Adapter(_create_sync_engine())
     model = casbin.Model()
     model.load_model_from_text(RBAC_MODEL)
     _enforcer = casbin.Enforcer(model, adapter)
