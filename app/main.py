@@ -9,6 +9,9 @@ import logging
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from redis import asyncio as aioredis
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.main import api_router
@@ -70,6 +73,8 @@ def create_app() -> FastAPI:
         logger.info("Starting application")
         await init_app()
         await check_policies_initialized()
+        redis = aioredis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=False)
+        FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
 
     @app.on_event("shutdown")
     async def shutdown_event():

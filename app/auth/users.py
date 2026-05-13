@@ -128,11 +128,11 @@ class UserManager(UUIDIDMixin, BaseUserManager[UserDB, uuid.UUID]):
 
 user_repository = InMemoryUserRepository()
 user_db = InMemoryUserDatabase(user_repository)
-password_helper = PasswordHelper()
+pwd_helper = PasswordHelper()
 
 
 async def get_user_manager() -> UserManager:
-    yield UserManager(user_db, password_helper)
+    yield UserManager(user_db, pwd_helper)
 
 
 bearer_transport = BearerTransport(tokenUrl="/api/v1/auth/login")

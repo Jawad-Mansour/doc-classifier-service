@@ -1,15 +1,15 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.constants import UserRole
-from app.core.security import hash_password
+from app.core.security import hash_pwd
 from app.domain.user import UserDomain
 from app.exceptions import LastAdminError, UserNotFound
 from app.repositories import user_repository
 from app.services import audit_service, cache_service
 
 
-async def register_user(session: AsyncSession, email: str, password: str) -> UserDomain:
-    hashed = hash_password(password)
+async def register_user(session: AsyncSession, email: str, plain: str) -> UserDomain:
+    hashed = hash_pwd(plain)
     user = await user_repository.create(session, email, hashed, UserRole.AUDITOR)
     await session.commit()
     return UserDomain.model_validate(user)
@@ -35,7 +35,3 @@ async def toggle_role(
     return UserDomain.model_validate(updated)
 
 
-async def change_role(user_id: str, role: str) -> UserDomain:
-    raise NotImplementedError(
-        "change_role requires a database session; use toggle_role(session, user_id, role, actor)."
-    )

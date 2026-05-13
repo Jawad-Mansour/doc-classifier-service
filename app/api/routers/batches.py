@@ -1,28 +1,37 @@
-"""Batch viewing and management routes."""
+"""Batch viewing routes."""
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps.permissions import require_permission
 from app.api.schemas import BatchResponse
 from app.auth.casbin import RESOURCE_BATCHES, ACTION_READ
 from app.auth.users import UserRead
+from app.db.session import get_session
+from app.exceptions import BatchNotFound
 from app.services.batch_service import get_batch, list_batches
+from fastapi_cache.decorator import cache
 
 router = APIRouter(prefix="/batches", tags=["batches"])
 
 
 @router.get("", response_model=list[BatchResponse])
+@cache(expire=60, namespace="batches")
 async def list_batches_route(
     user: UserRead = Depends(require_permission(RESOURCE_BATCHES, ACTION_READ)),
+    session: AsyncSession = Depends(get_session),
 ) -> list[BatchResponse]:
-    """List all batches."""
-    return await list_batches()
+    return await list_batches(session)
 
 
 @router.get("/{bid}", response_model=BatchResponse)
+@cache(expire=60)
 async def get_batch_route(
-    bid: str = Path(...),
+    bid: int = Path(...),
     user: UserRead = Depends(require_permission(RESOURCE_BATCHES, ACTION_READ)),
+    session: AsyncSession = Depends(get_session),
 ) -> BatchResponse:
-    """Get a single batch by ID."""
-    return await get_batch(bid)
+    try:
+        return await get_batch(session, bid)
+    except BatchNotFound:
+        raise HTTPException(status_code=404, detail="Batch not found")

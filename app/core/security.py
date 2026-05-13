@@ -12,11 +12,11 @@ from app.core.config import settings
 _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def hash_password(plain: str) -> str:
+def hash_pwd(plain: str) -> str:
     return _pwd_context.hash(plain)
 
 
-def verify_password(plain: str, hashed: str) -> bool:
+def verify_pwd(plain: str, hashed: str) -> bool:
     return _pwd_context.verify(plain, hashed)
 
 

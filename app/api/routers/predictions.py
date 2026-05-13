@@ -1,29 +1,39 @@
 """Prediction-related endpoints."""
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps.permissions import require_permission
 from app.api.schemas import PredictionResponse, PredictionUpdateRequest
 from app.auth.casbin import RESOURCE_PREDICTIONS, ACTION_READ, ACTION_UPDATE
 from app.auth.users import UserRead
+from app.db.session import get_session
+from app.exceptions import PredictionNotFound, UnauthorizedRelabel
 from app.services.prediction_service import get_recent, relabel
+from fastapi_cache.decorator import cache
 
 router = APIRouter(prefix="/predictions", tags=["predictions"])
 
 
 @router.get("/recent", response_model=list[PredictionResponse])
+@cache(expire=60, namespace="predictions:recent")
 async def get_recent_predictions(
     user: UserRead = Depends(require_permission(RESOURCE_PREDICTIONS, ACTION_READ)),
+    session: AsyncSession = Depends(get_session),
 ) -> list[PredictionResponse]:
-    """Return recent predictions."""
-    return await get_recent()
+    return await get_recent(session)
 
 
 @router.patch("/{id}", response_model=PredictionResponse)
 async def update_prediction(
     request: PredictionUpdateRequest,
-    id: str = Path(...),
+    id: int = Path(...),
     user: UserRead = Depends(require_permission(RESOURCE_PREDICTIONS, ACTION_UPDATE)),
+    session: AsyncSession = Depends(get_session),
 ) -> PredictionResponse:
-    """Relabel a prediction."""
-    return await relabel(id, request.new_label)
+    try:
+        return await relabel(session, id, request.new_label, user.email)
+    except PredictionNotFound:
+        raise HTTPException(status_code=404, detail="Prediction not found")
+    except UnauthorizedRelabel:
+        raise HTTPException(status_code=403, detail="Cannot relabel predictions with confidence >= 0.7")
