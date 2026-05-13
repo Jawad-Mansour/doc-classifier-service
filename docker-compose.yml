@@ -36,3 +36,26 @@ services:
     ports:
       - "8200:8200"
     command: server -dev
+
+  sftp-ingest:
+    build:
+      context: .
+      dockerfile: docker/ingest.Dockerfile
+    depends_on:
+      - redis
+      - minio
+      - sftp
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+      MINIO_BUCKET: documents
+
+      SFTP_HOST: sftp
+      SFTP_PORT: 22
+      SFTP_USERNAME: test
+      SFTP_PASSWORD: test
+      SFTP_REMOTE_FOLDER: /upload

@@ -1,13 +1,16 @@
 from minio import Minio
 
+from app.core.config import settings
+
+
 minio_client = Minio(
-    "localhost:9000",
-    access_key="minio",
-    secret_key="minio123",
-    secure=False
+    settings.MINIO_ENDPOINT,
+    access_key=settings.MINIO_ACCESS_KEY,
+    secret_key=settings.MINIO_SECRET_KEY,
+    secure=False,
 )
 
-BUCKET_NAME = "documents"
+BUCKET_NAME = settings.MINIO_BUCKET
 
 
 def ensure_bucket_exists():
@@ -15,13 +18,16 @@ def ensure_bucket_exists():
         minio_client.make_bucket(BUCKET_NAME)
 
 
-def upload_file(local_path: str, object_name: str):
+def upload_file(
+    local_path: str,
+    object_name: str
+):
     ensure_bucket_exists()
 
     minio_client.fput_object(
         BUCKET_NAME,
         object_name,
-        local_path
+        local_path,
     )
 
     return object_name
