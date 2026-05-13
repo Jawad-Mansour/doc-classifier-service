@@ -4,6 +4,9 @@ import os
 class Settings:
     # App
     ENV = os.getenv("ENV", "development")
+    APP_NAME = os.getenv("APP_NAME", "Document Classifier Service")
+    APP_VERSION = os.getenv("APP_VERSION", "0.1.0")
+    DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
     # Database
     # Local defaults use localhost.
