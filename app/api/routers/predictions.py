@@ -8,7 +8,7 @@ from app.api.schemas import PredictionResponse, PredictionUpdateRequest
 from app.auth.casbin import RESOURCE_PREDICTIONS, ACTION_READ, ACTION_UPDATE
 from app.auth.users import UserRead
 from app.db.session import get_session
-from app.exceptions import PredictionNotFound, UnauthorizedRelabel
+from app.exceptions import InvalidLabel, PredictionNotFound, UnauthorizedRelabel
 from app.services import cache_service
 from app.services.prediction_service import get_recent, relabel
 from fastapi_cache.decorator import cache
@@ -38,3 +38,5 @@ async def update_prediction(
         raise HTTPException(status_code=404, detail="Prediction not found")
     except UnauthorizedRelabel:
         raise HTTPException(status_code=403, detail="Cannot relabel predictions with confidence >= 0.7")
+    except InvalidLabel as e:
+        raise HTTPException(status_code=400, detail=str(e))

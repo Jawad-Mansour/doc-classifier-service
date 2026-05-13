@@ -95,6 +95,9 @@ class RoleService:
         enforcer.add_policy(ROLE_ADMIN, "users", "update")
         enforcer.add_policy(ROLE_ADMIN, "users", "delete")
         enforcer.add_policy(ROLE_ADMIN, "users", "manage_roles")
+        enforcer.add_policy(ROLE_ADMIN, "batches", "read")
+        enforcer.add_policy(ROLE_ADMIN, "predictions", "read")
+        enforcer.add_policy(ROLE_ADMIN, "predictions", "update")
         enforcer.add_policy(ROLE_ADMIN, "audit_log", "read")
 
         # Reviewer permissions

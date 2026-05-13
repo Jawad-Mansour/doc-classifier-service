@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.constants import CLASS_NAMES, CONFIDENCE_THRESHOLD
 from app.domain.prediction import PredictionDomain
-from app.exceptions import PredictionNotFound, UnauthorizedRelabel
+from app.exceptions import InvalidLabel, PredictionNotFound, UnauthorizedRelabel
 from app.repositories import prediction_repository
 from app.services import audit_service, cache_service
 
@@ -64,6 +64,8 @@ async def relabel(
         raise PredictionNotFound
     if prediction.confidence >= CONFIDENCE_THRESHOLD:
         raise UnauthorizedRelabel
+    if new_label not in CLASS_NAMES:
+        raise InvalidLabel(f"Unknown label: {new_label}")
     new_label_id = CLASS_NAMES.index(new_label)
     updated = await prediction_repository.update_label(
         session, prediction_id, new_label_id, new_label, reviewer

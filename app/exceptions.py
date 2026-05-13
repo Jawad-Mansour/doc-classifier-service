@@ -20,3 +20,7 @@ class LastAdminError(Exception):
 
 class UnauthorizedRelabel(Exception):
     pass
+
+
+class InvalidLabel(Exception):
+    pass

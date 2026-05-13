@@ -85,6 +85,8 @@ services:
         condition: service_healthy
       vault:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment: &app_env
       APP_NAME: ${APP_NAME:-Document Classifier Service}
       APP_VERSION: ${APP_VERSION:-0.1.0}
@@ -122,7 +124,7 @@ services:
       DEMO_AUDITOR_EMAIL: ${DEMO_AUDITOR_EMAIL:-auditor@example.com}
       DEMO_AUDITOR_PASSWORD: ${DEMO_AUDITOR_PASSWORD:-Auditor123!}
     ports:
-      - "8000:8000"
+      - "8080:8000"
     volumes:
       - .:/app
 
@@ -137,6 +139,20 @@ services:
     command: alembic upgrade head
     volumes:
       - .:/app
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    depends_on:
+      - api
+    environment:
+      - VITE_API_BASE=/api/v1
 
   sftp-ingest-worker:
     build:

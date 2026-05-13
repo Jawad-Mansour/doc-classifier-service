@@ -4,6 +4,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from app.api.schemas.common import ErrorResponse, HealthResponse, MessageResponse
+from app.core.constants import UserRole
 
 
 class BatchResponse(BaseModel):
@@ -35,7 +36,7 @@ class AuditLogResponse(BaseModel):
 
 
 class UserRoleUpdateRequest(BaseModel):
-    role: str
+    role: UserRole
 
 
 class UserRoleResponse(BaseModel):
