@@ -74,9 +74,8 @@ async def collect_readiness() -> dict[str, object]:
                 await result
 
     try:
-        checks["minio"] = bool(
-            await asyncio.to_thread(blob_client.client.bucket_exists, settings.MINIO_BUCKET)
-        )
+        await asyncio.to_thread(blob_client.ensure_bucket, settings.MINIO_BUCKET)
+        checks["minio"] = True
     except Exception:
         checks["minio"] = False
 
