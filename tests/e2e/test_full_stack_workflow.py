@@ -39,10 +39,10 @@ FIXTURE_PATH = REPO_ROOT / "app" / "classifier" / "eval" / "golden_images" / "te
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8080")
 VAULT_HEALTH_URL = "http://localhost:8200/v1/sys/health"
 
-POSTGRES_CONTAINER = "doc-classifier-service-postgres-1"
-REDIS_CONTAINER = "doc-classifier-service-redis-1"
-SFTP_CONTAINER = "doc-classifier-service-sftp-1"
-API_CONTAINER = "doc-classifier-service-api-1"
+POSTGRES_SERVICE = "postgres"
+REDIS_SERVICE = "redis"
+SFTP_SERVICE = "sftp"
+API_SERVICE = "api"
 
 SFTP_UPLOAD_DIR = "/home/test/upload"
 SFTP_PROCESSED_DIR = "/home/test/processed"
@@ -67,12 +67,20 @@ def run_command(
     )
 
 
-def docker_exec(container: str, command: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
-    return run_command(["docker", "exec", container, *command], check=check)
+def compose_container(service: str) -> str:
+    result = run_command(["docker", "compose", "ps", "-q", service])
+    container = result.stdout.strip()
+    if not container:
+        raise RuntimeError(f"No running container found for Compose service {service!r}")
+    return container
 
 
-def docker_exec_shell(container: str, script: str, *, check: bool = True) -> subprocess.CompletedProcess[str]:
-    return run_command(["docker", "exec", container, "sh", "-lc", script], check=check)
+def docker_exec(service: str, command: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
+    return run_command(["docker", "exec", compose_container(service), *command], check=check)
+
+
+def docker_exec_shell(service: str, script: str, *, check: bool = True) -> subprocess.CompletedProcess[str]:
+    return run_command(["docker", "exec", compose_container(service), "sh", "-lc", script], check=check)
 
 
 def http_request(
@@ -135,7 +143,7 @@ def psql_query(sql: str) -> str:
             "exec",
             "-e",
             "PGPASSWORD=app",
-            POSTGRES_CONTAINER,
+            compose_container(POSTGRES_SERVICE),
             "psql",
             "-h",
             "127.0.0.1",
@@ -164,25 +172,25 @@ def check_minio_object(path: str) -> None:
         f"client.stat_object('{MINIO_BUCKET}', '{path}'); "
         "print('ok')"
     )
-    result = docker_exec(API_CONTAINER, ["python", "-c", script])
+    result = docker_exec(API_SERVICE, ["python", "-c", script])
     if result.stdout.strip() != "ok":
         raise RuntimeError(f"Unable to stat MinIO object {path!r}")
 
 
 def redis_ping() -> str:
-    return docker_exec(REDIS_CONTAINER, ["redis-cli", "PING"]).stdout.strip()
+    return docker_exec(REDIS_SERVICE, ["redis-cli", "PING"]).stdout.strip()
 
 
 def redis_key_exists(key: str) -> int:
-    return int(docker_exec(REDIS_CONTAINER, ["redis-cli", "EXISTS", key]).stdout.strip() or "0")
+    return int(docker_exec(REDIS_SERVICE, ["redis-cli", "EXISTS", key]).stdout.strip() or "0")
 
 
 def redis_queue_length() -> int:
-    return int(docker_exec(REDIS_CONTAINER, ["redis-cli", "LLEN", f"rq:queue:{QUEUE_NAME}"]).stdout.strip() or "0")
+    return int(docker_exec(REDIS_SERVICE, ["redis-cli", "LLEN", f"rq:queue:{QUEUE_NAME}"]).stdout.strip() or "0")
 
 
 def sftp_file_exists(path: str) -> bool:
-    return docker_exec_shell(SFTP_CONTAINER, f"test -f {path!s} && echo yes || echo no").stdout.strip() == "yes"
+    return docker_exec_shell(SFTP_SERVICE, f"test -f {path!s} && echo yes || echo no").stdout.strip() == "yes"
 
 
 def write_report(lines: list[str]) -> None:
@@ -311,7 +319,7 @@ def main() -> int:
         if sftp_file_exists(upload_container_path) or sftp_file_exists(processed_container_path):
             raise RuntimeError(f"Test filename collision in SFTP paths: {upload_filename}")
 
-        run_command(["docker", "cp", str(FIXTURE_PATH), f"{SFTP_CONTAINER}:{upload_container_path}"])
+        run_command(["docker", "cp", str(FIXTURE_PATH), f"{compose_container(SFTP_SERVICE)}:{upload_container_path}"])
 
         document_row = wait_for(
             lambda: _query_document_row(upload_filename),
@@ -402,6 +410,7 @@ def main() -> int:
         print(f"PASS: full stack workflow validated. Report written to {REPORT_PATH}")
         return 0
     except Exception as exc:  # pragma: no cover - live failure path
+        diagnostics = _collect_failure_diagnostics()
         append_section(
             report_lines,
             "Failure",
@@ -411,9 +420,16 @@ def main() -> int:
                 "```text",
                 traceback.format_exc().rstrip(),
                 "```",
+                "",
+                "### Docker diagnostics",
+                "",
+                "```text",
+                diagnostics.rstrip(),
+                "```",
             ],
         )
         write_report(report_lines)
+        print("\n".join(report_lines[-12:]), file=sys.stderr)
         print(f"FAIL: full stack workflow validation failed. Partial report written to {REPORT_PATH}", file=sys.stderr)
         return 1
 
@@ -457,22 +473,34 @@ def _check_vault() -> str:
         status, body, _ = http_request("GET", VAULT_HEALTH_URL)
         return f"reachable with HTTP {status} {body}"
     except Exception:
-        status_output = run_command(
-            [
-                "docker",
-                "ps",
-                "-a",
-                "--format",
-                "{{.Names}}|{{.Status}}",
-            ]
-        ).stdout
-        vault_line = next(
-            (line for line in status_output.splitlines() if line.startswith("doc-classifier-service-vault-1|")),
-            "",
-        )
-        vault_logs = run_command(["docker", "logs", "--tail", "20", "doc-classifier-service-vault-1"], check=False).stdout.strip()
+        vault_container = run_command(["docker", "compose", "ps", "-q", "vault"], check=False).stdout.strip()
+        vault_line = ""
+        vault_logs = ""
+        if vault_container:
+            vault_line = run_command(
+                ["docker", "inspect", "-f", "{{.Name}}|{{.State.Status}}", vault_container],
+                check=False,
+            ).stdout.strip()
+            vault_logs = run_command(["docker", "logs", "--tail", "20", vault_container], check=False).stdout.strip()
         vault_logs = vault_logs or "no logs captured"
         return f"unreachable; container status={vault_line or 'missing'}; logs={vault_logs}"
+
+
+def _collect_failure_diagnostics() -> str:
+    sections: list[str] = []
+    commands = [
+        ("docker compose ps", ["docker", "compose", "ps"]),
+        ("api logs", ["docker", "compose", "logs", "--tail", "80", "api"]),
+        ("inference-worker logs", ["docker", "compose", "logs", "--tail", "80", "inference-worker"]),
+        ("sftp-ingest-worker logs", ["docker", "compose", "logs", "--tail", "80", "sftp-ingest-worker"]),
+        ("migrate logs", ["docker", "compose", "logs", "--tail", "80", "migrate"]),
+        ("vault logs", ["docker", "compose", "logs", "--tail", "80", "vault"]),
+    ]
+    for title, command in commands:
+        result = run_command(command, check=False, timeout_seconds=30)
+        output = (result.stdout + result.stderr).strip()
+        sections.append(f"## {title}\n{output or '<no output>'}")
+    return "\n\n".join(sections)
 
 
 if __name__ == "__main__":

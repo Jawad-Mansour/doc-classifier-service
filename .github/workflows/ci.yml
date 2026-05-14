@@ -57,7 +57,13 @@ jobs:
             python app/classifier/eval/golden.py
 
       - name: Run live full-stack smoke workflow
-        run: python3 tests/e2e/test_full_stack_workflow.py
+        run: |
+          python3 tests/e2e/test_full_stack_workflow.py || {
+            cat tmp/full_stack_workflow_report.md || true
+            docker compose ps || true
+            docker compose logs --tail 120 api inference-worker sftp-ingest-worker migrate vault || true
+            exit 1
+          }
 
       - name: Stop Docker stack
         if: always()
