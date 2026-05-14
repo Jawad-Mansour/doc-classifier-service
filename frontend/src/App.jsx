@@ -8,6 +8,7 @@ import Predictions from './pages/Predictions'
 import Batches from './pages/Batches'
 import AuditLog from './pages/AuditLog'
 import Users from './pages/Users'
+import Classify from './pages/Classify'
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard"   element={<Dashboard />} />
               <Route path="/predictions" element={<Predictions />} />
+              <Route path="/classify"    element={<Classify />} />
               <Route path="/batches"     element={<Batches />} />
               <Route path="/audit-log"   element={<AuditLog />} />
               <Route path="/users"       element={<Users />} />
