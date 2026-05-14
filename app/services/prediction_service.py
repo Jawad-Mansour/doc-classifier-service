@@ -72,6 +72,8 @@ async def relabel(
     updated = await prediction_repository.update_label(
         session, prediction_id, new_label_id, new_label, reviewer
     )
+    if updated is None:
+        raise PredictionNotFound
     await audit_service.log_event(session, reviewer, "relabel", f"prediction:{prediction_id}")
     await session.commit()
     await cache_service.invalidate_prediction_write(updated.batch_id)

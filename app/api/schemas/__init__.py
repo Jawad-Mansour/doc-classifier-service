@@ -1,13 +1,15 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.api.schemas.common import ErrorResponse, HealthResponse, MessageResponse
 from app.core.constants import UserRole
 
 
 class BatchResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     request_id: str
     status: str
@@ -15,6 +17,8 @@ class BatchResponse(BaseModel):
 
 
 class PredictionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     batch_id: int
     label: str
@@ -29,6 +33,8 @@ class PredictionUpdateRequest(BaseModel):
 
 
 class AuditLogResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     actor: str
     action: str
@@ -41,6 +47,8 @@ class UserRoleUpdateRequest(BaseModel):
 
 
 class UserRoleResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     email: str
     role: str

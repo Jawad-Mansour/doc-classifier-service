@@ -9,7 +9,7 @@ async def get_by_id(session: AsyncSession, user_id: int) -> User | None:
 
 
 async def get_by_email(session: AsyncSession, email: str) -> User | None:
-    result = await session.execute(select(User).where(User.email == email))
+    result = await session.execute(select(User).where(User.__table__.c.email == email))
     return result.scalar_one_or_none()
 
 

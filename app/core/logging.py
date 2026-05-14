@@ -1,4 +1,4 @@
-﻿"""Logging helpers with request ID propagation."""
+"""Logging helpers with request ID propagation."""
 
 import logging
 import sys
@@ -28,8 +28,8 @@ def configure_logging() -> None:
         handler.addFilter(RequestIDFilter())
         root_logger.addHandler(handler)
     else:
-        for handler in root_logger.handlers:
-            handler.setFormatter(formatter)
-            handler.addFilter(RequestIDFilter())
+        for existing_handler in root_logger.handlers:
+            existing_handler.setFormatter(formatter)
+            existing_handler.addFilter(RequestIDFilter())
 
     root_logger.setLevel(logging.INFO)

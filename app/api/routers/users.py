@@ -21,7 +21,8 @@ async def change_user_role(
     session: AsyncSession = Depends(get_session),
 ) -> UserRoleResponse:
     try:
-        return await toggle_role(session, id, request.role, user.email)
+        updated_user = await toggle_role(session, id, request.role, user.email)
+        return UserRoleResponse.model_validate(updated_user)
     except UserNotFound:
         raise HTTPException(status_code=404, detail="User not found")
     except LastAdminError:

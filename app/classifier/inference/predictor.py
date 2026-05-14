@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeGuard
 
 import torch
 import torch.nn as nn
@@ -81,7 +81,7 @@ class DocumentClassifierPredictor:
         return get_class_names_from_model_card(model_card)
 
 
-def _is_string_sequence(value: Any) -> bool:
+def _is_string_sequence(value: Any) -> TypeGuard[Sequence[str]]:
     return isinstance(value, Sequence) and not isinstance(value, str) and all(
         isinstance(item, str) for item in value
     )

@@ -34,6 +34,9 @@ jobs:
       - name: Run lint in Docker
         run: docker compose run -T --rm inference-worker ruff check app tests
 
+      - name: Run hardcoded secret scan
+        run: docker compose run -T --rm inference-worker python scripts/check_no_hardcoded_secrets.py
+
       - name: Run backend non-e2e tests in Docker
         run: |
           docker compose run \

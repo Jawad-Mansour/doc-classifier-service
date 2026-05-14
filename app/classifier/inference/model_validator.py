@@ -2,7 +2,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeGuard
 
 
 CLASSIFIER_DIR = Path(__file__).resolve().parents[1]
@@ -103,7 +103,7 @@ def validate_model_artifact(
     return ModelValidationResult(model_card=model_card, model_sha256=actual_sha)
 
 
-def _is_string_list(value: Any) -> bool:
+def _is_string_list(value: Any) -> TypeGuard[list[str]]:
     return isinstance(value, list) and bool(value) and all(isinstance(item, str) for item in value)
 
 
