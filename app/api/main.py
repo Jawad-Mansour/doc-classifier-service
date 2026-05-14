@@ -6,7 +6,7 @@ Single point for composing all routers with consistent prefix and tags.
 
 from fastapi import APIRouter
 
-from app.api.routers import auth, health, users, batches, audit, predictions
+from app.api.routers import auth, health, users, batches, audit, predictions, classify
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -17,5 +17,6 @@ api_router.include_router(users.router)
 api_router.include_router(batches.router)
 api_router.include_router(predictions.router)
 api_router.include_router(audit.router)
+api_router.include_router(classify.router)
 
 __all__ = ["api_router"]
