@@ -77,14 +77,6 @@ def create_app() -> FastAPI:
         redis = aioredis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=False)
         FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
 
-        try:
-            from app.classifier.inference.predictor import DocumentClassifierPredictor
-            app.state.predictor = DocumentClassifierPredictor()
-            logger.info("Classifier model loaded successfully")
-        except Exception as exc:
-            logger.warning("Classifier model not loaded (classify endpoint will return 503): %s", exc)
-            app.state.predictor = None
-
     @app.on_event("shutdown")
     async def shutdown_event():
         logger.info("Shutting down application")

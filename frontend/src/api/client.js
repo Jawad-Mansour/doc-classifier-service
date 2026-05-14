@@ -39,6 +39,7 @@ export const api = {
   me:           ()                 => request('GET',  '/auth/me'),
 
   getPredictions: ()               => request('GET',  '/predictions/recent'),
+  getPredictionsByBatch: (batchId) => request('GET', `/predictions/batch/${batchId}`),
   relabel:      (id, new_label)    => request('PATCH', `/predictions/${id}`, { body: { new_label } }),
 
   getBatches:   ()                 => request('GET',  '/batches'),

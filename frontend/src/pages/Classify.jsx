@@ -3,17 +3,28 @@ import { api } from '../api/client'
 import ConfidenceBar from '../components/ConfidenceBar'
 import Spinner from '../components/Spinner'
 
+const POLL_INTERVAL_MS = 2000
+const MAX_POLL_ATTEMPTS = 90
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 export default function Classify() {
   const [dragging,  setDragging]  = useState(false)
   const [file,      setFile]      = useState(null)
   const [loading,   setLoading]   = useState(false)
   const [result,    setResult]    = useState(null)
+  const [job,       setJob]       = useState(null)
+  const [status,    setStatus]    = useState('')
   const [error,     setError]     = useState('')
   const inputRef = useRef()
 
   function handleFile(f) {
     setFile(f)
     setResult(null)
+    setJob(null)
+    setStatus('')
     setError('')
   }
 
@@ -29,9 +40,35 @@ export default function Classify() {
     setLoading(true)
     setError('')
     setResult(null)
+    setJob(null)
+    setStatus('Uploading file and queuing inference…')
     try {
-      const data = await api.classify(file)
-      setResult(data)
+      const queued = await api.classify(file)
+      setJob(queued)
+      setStatus(`Queued batch #${queued.batch_id}. Waiting for worker…`)
+
+      for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt += 1) {
+        await sleep(POLL_INTERVAL_MS)
+        const batch = await api.getBatch(queued.batch_id)
+
+        if (batch.status === 'failed') {
+          throw new Error(`Batch #${queued.batch_id} failed during inference`)
+        }
+
+        if (batch.status === 'done') {
+          const predictions = await api.getPredictionsByBatch(queued.batch_id)
+          if (!predictions.length) {
+            throw new Error(`Batch #${queued.batch_id} finished but no prediction was found`)
+          }
+          setResult(predictions[0])
+          setStatus(`Batch #${queued.batch_id} finished`)
+          return
+        }
+
+        setStatus(`Batch #${queued.batch_id} is ${batch.status}…`)
+      }
+
+      throw new Error(`Timed out waiting for batch #${queued.batch_id} to finish`)
     } catch (err) {
       setError(err.message || 'Classification failed')
     } finally {
@@ -42,6 +79,8 @@ export default function Classify() {
   function reset() {
     setFile(null)
     setResult(null)
+    setJob(null)
+    setStatus('')
     setError('')
   }
 
@@ -69,7 +108,7 @@ export default function Classify() {
         <input
           ref={inputRef}
           type="file"
-          accept="image/*,.tiff,.tif"
+          accept=".tif,.tiff,.png,.jpg,.jpeg,image/tiff,image/png,image/jpeg"
           className="hidden"
           onChange={e => e.target.files[0] && handleFile(e.target.files[0])}
         />
@@ -89,7 +128,7 @@ export default function Classify() {
             </svg>
             <div>
               <p className="text-sm font-medium text-slate-700">Drop a file here or <span className="text-indigo-600">browse</span></p>
-              <p className="text-xs text-slate-400 mt-1">TIFF, PNG, JPG supported</p>
+              <p className="text-xs text-slate-400 mt-1">TIFF, PNG, JPG supported through the worker pipeline</p>
             </div>
           </div>
         )}
@@ -101,6 +140,17 @@ export default function Classify() {
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
           </svg>
           {error}
+        </div>
+      )}
+
+      {(loading || job || status) && !error && (
+        <div className="mb-5 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-700">
+          <p className="font-medium">{status || 'Waiting for worker…'}</p>
+          {job && (
+            <p className="mt-1 text-xs text-sky-600">
+              request_id={job.request_id} · batch=#{job.batch_id} · document=#{job.document_id}
+            </p>
+          )}
         </div>
       )}
 
@@ -135,6 +185,7 @@ export default function Classify() {
             <div className="flex-1">
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Predicted type</p>
               <p className="text-2xl font-bold text-slate-900 capitalize">{result.label.replace(/_/g, ' ')}</p>
+              {job && <p className="mt-2 text-xs text-slate-400">Batch #{job.batch_id}</p>}
             </div>
             <div className="text-right">
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Confidence</p>
@@ -153,7 +204,7 @@ export default function Classify() {
           <div className="px-6 py-4">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Top 5 predictions</p>
             <div className="space-y-2.5">
-              {result.top5.map((p, i) => (
+              {(result.top5 || [{ label: result.label, confidence: result.confidence }]).map((p, i) => (
                 <div key={p.label} className="flex items-center gap-3">
                   <span className="text-xs text-slate-400 w-4 tabular-nums">{i + 1}</span>
                   <span className={`text-sm capitalize flex-1 ${i === 0 ? 'font-semibold text-slate-900' : 'text-slate-600'}`}>

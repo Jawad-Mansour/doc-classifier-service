@@ -5,6 +5,7 @@ import os
 # Set before any app imports so Settings() and SecuritySettings() pick them up
 os.environ.setdefault("DEBUG", "true")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-for-demo-minimum-32-chars-x")
+os.environ["REQUIRE_VAULT"] = "false"
 
 import pytest
 from fastapi.testclient import TestClient

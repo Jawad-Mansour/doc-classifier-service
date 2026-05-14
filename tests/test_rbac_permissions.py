@@ -28,7 +28,6 @@ class FakeUser:
 
 def _make_seeded_enforcer():
     """Return a real casbin enforcer with default policies loaded."""
-    from app.auth.casbin import init_casbin_enforcer, _enforcer, _sync_engine
     from casbin_sqlalchemy_adapter import Adapter
     import casbin
     from app.auth.casbin import RBAC_MODEL

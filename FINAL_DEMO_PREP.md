@@ -32,21 +32,21 @@ The project is a document classification system with:
 - Vault for secret management in local demo/dev mode
 - a PyTorch classifier running CPU inference
 
-The current end-to-end product is centered around an SFTP ingestion pipeline:
+The current end-to-end product supports both SFTP ingestion and browser upload. Both paths use the same queued worker pipeline:
 
-1. A TIFF file is dropped into SFTP.
-2. The ingest worker picks it up.
+1. A TIFF file is dropped into SFTP, or a TIFF/PNG/JPG file is uploaded from the UI.
+2. The ingest worker or upload API creates the ingestion request.
 3. A batch and document are created in Postgres.
 4. The raw file is stored in MinIO.
 5. A Redis/RQ inference job is queued.
 6. The inference worker downloads the image, runs the classifier, creates an overlay, and stores prediction results.
 7. The API and frontend expose batches, predictions, audit logs, and role-controlled actions.
 
-Important limitation:
+Current upload scope:
 
-- The frontend is currently an operations dashboard, not a browser upload product.
-- There is no UI upload flow and no backend browser upload endpoint yet.
-- Input is currently expected through SFTP as `.tif` or `.tiff`.
+- SFTP ingestion accepts `.tif` and `.tiff`.
+- Browser upload accepts `.tif`, `.tiff`, `.png`, `.jpg`, and `.jpeg`.
+- PDF/DOCX conversion is not implemented.
 
 ---
 
@@ -301,9 +301,9 @@ Common object paths:
 
 ## SFTP
 
-SFTP is the ingestion channel.
+SFTP is the batch/drop-folder ingestion channel.
 
-We use it because the project brief expects document ingestion from an external drop source rather than direct browser upload.
+We use it because the project brief expects document ingestion from an external drop source. Browser upload is also available for demos and manual testing, but it still queues work through Redis/RQ and the inference worker.
 
 In this project:
 
@@ -599,11 +599,10 @@ Current UI responsibilities:
 
 Current limitation:
 
-- no browser upload flow
-- no page for direct file submission
-- no `multipart/form-data` upload API in backend
+- no PDF/DOCX upload conversion
+- browser upload supports image files only: TIFF, PNG, JPG/JPEG
 
-This means the frontend is currently a monitoring and operations UI for the SFTP-driven system.
+This means the frontend can submit individual image files and can monitor the SFTP-driven system.
 
 ---
 
@@ -816,13 +815,10 @@ That split is the correct architecture for this kind of app.
 
 ## Known Limitations
 
-- No browser upload flow yet
-- No backend `multipart/form-data` upload endpoint yet
-- Current ingestion is SFTP-only
+- No PDF/DOCX conversion yet
+- Browser upload is image-only and queues work through the worker pipeline
 - File validation is extension-based for ingest, not deep content verification
 - Current `/ready` endpoint is still shallow and returns a placeholder success response
-- Long-running workers should ideally have restart policies in Compose
-- Current UI assumes the backend pipeline already produced data
 
 ---
 
@@ -843,10 +839,8 @@ If asked "what makes this production-like?" the strongest answers are:
 
 If asked "what is still missing?" the honest answer is:
 
-- direct browser upload
 - broader file-type ingestion and conversion
 - stronger readiness checks
-- better Compose restart policy hardening
 
 ---
 
@@ -866,4 +860,3 @@ If asked "what is still missing?" the honest answer is:
 - Admin: `admin@example.com / Admin123!`
 - Reviewer: `reviewer@example.com / Reviewer123!`
 - Auditor: `auditor@example.com / Auditor123!`
-

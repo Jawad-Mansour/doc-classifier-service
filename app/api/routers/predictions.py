@@ -10,7 +10,7 @@ from app.auth.users import UserRead
 from app.db.session import get_session
 from app.exceptions import InvalidLabel, PredictionNotFound, UnauthorizedRelabel
 from app.services import cache_service
-from app.services.prediction_service import get_recent, relabel
+from app.services.prediction_service import get_recent, list_predictions, relabel
 from fastapi_cache.decorator import cache
 
 router = APIRouter(prefix="/predictions", tags=["predictions"])
@@ -23,6 +23,16 @@ async def get_recent_predictions(
     session: AsyncSession = Depends(get_session),
 ) -> list[PredictionResponse]:
     return await get_recent(session)
+
+
+@router.get("/batch/{batch_id}", response_model=list[PredictionResponse])
+async def get_predictions_for_batch(
+    batch_id: int = Path(...),
+    user: UserRead = Depends(require_permission(RESOURCE_PREDICTIONS, ACTION_READ)),
+    session: AsyncSession = Depends(get_session),
+) -> list[PredictionResponse]:
+    del user
+    return await list_predictions(session, batch_id)
 
 
 @router.patch("/{id}", response_model=PredictionResponse)

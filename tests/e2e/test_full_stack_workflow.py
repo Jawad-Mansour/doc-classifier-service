@@ -50,13 +50,20 @@ MINIO_BUCKET = "documents"
 QUEUE_NAME = "default"
 
 
-def run_command(args: list[str], *, check: bool = True, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+def run_command(
+    args: list[str],
+    *,
+    check: bool = True,
+    cwd: Path | None = None,
+    timeout_seconds: int = 120,
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         args,
         cwd=str(cwd or REPO_ROOT),
         check=check,
         text=True,
         capture_output=True,
+        timeout=timeout_seconds,
     )
 
 
@@ -218,8 +225,8 @@ def main() -> int:
             ],
         )
 
-        run_command(["docker", "compose", "up", "-d"], cwd=REPO_ROOT)
-        run_command(["docker", "compose", "run", "--rm", "migrate"], cwd=REPO_ROOT)
+        run_command(["docker", "compose", "up", "-d"], cwd=REPO_ROOT, timeout_seconds=180)
+        run_command(["docker", "compose", "run", "-T", "--rm", "migrate"], cwd=REPO_ROOT, timeout_seconds=60)
 
         health_status, health_body, _ = wait_for(
             lambda: _health_response("/api/v1/health"),
@@ -357,6 +364,10 @@ def main() -> int:
             raise RuntimeError(f"SFTP worker did not move file to processed: {processed_container_path}")
         if sftp_file_exists(upload_container_path):
             raise RuntimeError(f"SFTP upload file still present after processing: {upload_container_path}")
+
+        batch_row = split_row(psql_query(f"SELECT id, request_id, status FROM batches WHERE id = {batch_id};"))
+        if len(batch_row) < 3 or batch_row[2] != "done":
+            raise RuntimeError(f"Batch did not finish as done: {batch_row}")
 
         append_section(
             report_lines,

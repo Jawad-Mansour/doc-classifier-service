@@ -1,7 +1,9 @@
 """Health endpoint tests."""
 
-import pytest
 from fastapi.testclient import TestClient
+from unittest.mock import AsyncMock
+
+import app.api.routers.health as health_router
 
 
 def test_health_check(client: TestClient):
@@ -16,10 +18,21 @@ def test_health_check(client: TestClient):
 
 def test_readiness_check(client: TestClient):
     """Test readiness endpoint."""
+    health_router.collect_readiness = AsyncMock(
+        return_value={
+            "ready": True,
+            "checks": {
+                "database": True,
+                "redis": True,
+                "minio": True,
+            },
+        }
+    )
     response = client.get("/api/v1/ready")
     assert response.status_code == 200
     data = response.json()
     assert data["ready"] is True
+    assert data["checks"]["database"] is True
 
 
 def test_request_id_passed_through(client: TestClient, request_headers: dict):

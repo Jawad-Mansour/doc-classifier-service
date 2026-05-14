@@ -19,6 +19,7 @@ class PredictionResponse(BaseModel):
     batch_id: int
     label: str
     confidence: float
+    top5: list[Any] | None = None
     relabeled_by: str | None
     created_at: datetime
 
@@ -45,9 +46,22 @@ class UserRoleResponse(BaseModel):
     role: str
 
 
+class ClassificationQueuedResponse(BaseModel):
+    status: str
+    request_id: str
+    job_id: str
+    queue_job_id: str
+    batch_id: int
+    document_id: int
+    blob_bucket: str
+    blob_path: str
+    original_filename: str
+
+
 __all__ = [
     "AuditLogResponse",
     "BatchResponse",
+    "ClassificationQueuedResponse",
     "ErrorResponse",
     "HealthResponse",
     "MessageResponse",
