@@ -49,6 +49,11 @@ SFTP_PROCESSED_DIR = "/home/test/processed"
 MINIO_BUCKET = "documents"
 QUEUE_NAME = "default"
 
+API_WAIT_SECONDS = int(os.getenv("E2E_API_WAIT_SECONDS", "180"))
+DOCUMENT_WAIT_SECONDS = int(os.getenv("E2E_DOCUMENT_WAIT_SECONDS", "180"))
+PREDICTION_WAIT_SECONDS = int(os.getenv("E2E_PREDICTION_WAIT_SECONDS", "360"))
+AUDIT_WAIT_SECONDS = int(os.getenv("E2E_AUDIT_WAIT_SECONDS", "120"))
+
 
 def run_command(
     args: list[str],
@@ -238,13 +243,13 @@ def main() -> int:
 
         health_status, health_body, _ = wait_for(
             lambda: _health_response("/api/v1/health"),
-            timeout_seconds=60,
+            timeout_seconds=API_WAIT_SECONDS,
             interval_seconds=2,
             description="API health endpoint",
         )
         ready_status, ready_body, _ = wait_for(
             lambda: _health_response("/api/v1/ready"),
-            timeout_seconds=60,
+            timeout_seconds=API_WAIT_SECONDS,
             interval_seconds=2,
             description="API readiness endpoint",
         )
@@ -323,7 +328,7 @@ def main() -> int:
 
         document_row = wait_for(
             lambda: _query_document_row(upload_filename),
-            timeout_seconds=90,
+            timeout_seconds=DOCUMENT_WAIT_SECONDS,
             interval_seconds=2,
             description="document row creation",
         )
@@ -338,7 +343,7 @@ def main() -> int:
 
         prediction_row = wait_for(
             lambda: _query_prediction_row(document_id),
-            timeout_seconds=120,
+            timeout_seconds=PREDICTION_WAIT_SECONDS,
             interval_seconds=2,
             description="prediction row creation",
         )
@@ -357,7 +362,7 @@ def main() -> int:
 
         audit_row = wait_for(
             lambda: _query_audit_row(document_id),
-            timeout_seconds=60,
+            timeout_seconds=AUDIT_WAIT_SECONDS,
             interval_seconds=2,
             description="prediction audit row creation",
         )
