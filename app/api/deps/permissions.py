@@ -1,13 +1,12 @@
 """Permission and role-based access control dependencies."""
 
 from typing import Callable
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException, status
 
 from app.auth.casbin import (
     get_casbin_enforcer,
     ROLE_ADMIN,
     ROLE_REVIEWER,
-    ROLE_AUDITOR,
 )
 from app.api.deps.auth import CurrentActiveUserDep
 

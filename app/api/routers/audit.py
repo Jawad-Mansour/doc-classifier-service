@@ -18,4 +18,5 @@ async def get_audit_logs(
     user: UserRead = Depends(require_permission(RESOURCE_AUDIT_LOG, ACTION_READ)),
     session: AsyncSession = Depends(get_session),
 ) -> list[AuditLogResponse]:
-    return await list_logs(session)
+    del user
+    return [AuditLogResponse.model_validate(row) for row in await list_logs(session)]

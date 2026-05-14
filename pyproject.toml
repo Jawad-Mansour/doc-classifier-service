@@ -39,3 +39,23 @@ dependencies = [
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
+[tool.ruff]
+extend-exclude = ["app/classifier/training/train_colab.ipynb"]
+
+[tool.mypy]
+python_version = "3.11"
+
+[[tool.mypy.overrides]]
+module = [
+    "casbin",
+    "casbin_sqlalchemy_adapter",
+    "paramiko",
+    "passlib",
+    "passlib.*",
+    "redis",
+    "redis.*",
+    "torchvision",
+    "torchvision.*",
+]
+ignore_missing_imports = true

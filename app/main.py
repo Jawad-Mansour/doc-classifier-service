@@ -5,10 +5,13 @@ Initializes the FastAPI app with middleware, exception handlers, and routers.
 """
 
 import logging
+from collections.abc import Awaitable, Callable
+from typing import cast
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from redis import asyncio as aioredis
@@ -30,6 +33,8 @@ from app.db.session import dispose_engine
 
 
 logger = logging.getLogger("app.main")
+
+ExceptionHandler = Callable[[Request, Exception], Response | Awaitable[Response]]
 
 
 def create_app() -> FastAPI:
@@ -63,8 +68,14 @@ def create_app() -> FastAPI:
         allow_headers=security_settings.ALLOW_HEADERS,
     )
 
-    app.add_exception_handler(StarletteHTTPException, http_exception_handler)
-    app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    app.add_exception_handler(
+        StarletteHTTPException,
+        cast(ExceptionHandler, http_exception_handler),
+    )
+    app.add_exception_handler(
+        RequestValidationError,
+        cast(ExceptionHandler, validation_exception_handler),
+    )
     app.add_exception_handler(Exception, generic_exception_handler)
 
     app.include_router(api_router)
@@ -76,14 +87,6 @@ def create_app() -> FastAPI:
         await check_policies_initialized()
         redis = aioredis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=False)
         FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
-
-        try:
-            from app.classifier.inference.predictor import DocumentClassifierPredictor
-            app.state.predictor = DocumentClassifierPredictor()
-            logger.info("Classifier model loaded successfully")
-        except Exception as exc:
-            logger.warning("Classifier model not loaded (classify endpoint will return 503): %s", exc)
-            app.state.predictor = None
 
     @app.on_event("shutdown")
     async def shutdown_event():

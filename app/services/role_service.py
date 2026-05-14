@@ -84,29 +84,31 @@ class RoleService:
         """
         enforcer = get_casbin_enforcer()
 
-        # Check if policies already exist
-        all_policies = enforcer.get_policy()
-        if all_policies:
-            return
+        changed = False
+
+        def add_policy(role: str, resource: str, action: str) -> None:
+            nonlocal changed
+            changed = enforcer.add_policy(role, resource, action) or changed
 
         # Admin permissions
-        enforcer.add_policy(ROLE_ADMIN, "users", "create")
-        enforcer.add_policy(ROLE_ADMIN, "users", "read")
-        enforcer.add_policy(ROLE_ADMIN, "users", "update")
-        enforcer.add_policy(ROLE_ADMIN, "users", "delete")
-        enforcer.add_policy(ROLE_ADMIN, "users", "manage_roles")
-        enforcer.add_policy(ROLE_ADMIN, "batches", "read")
-        enforcer.add_policy(ROLE_ADMIN, "predictions", "read")
-        enforcer.add_policy(ROLE_ADMIN, "predictions", "update")
-        enforcer.add_policy(ROLE_ADMIN, "audit_log", "read")
+        add_policy(ROLE_ADMIN, "users", "create")
+        add_policy(ROLE_ADMIN, "users", "read")
+        add_policy(ROLE_ADMIN, "users", "update")
+        add_policy(ROLE_ADMIN, "users", "delete")
+        add_policy(ROLE_ADMIN, "users", "manage_roles")
+        add_policy(ROLE_ADMIN, "batches", "read")
+        add_policy(ROLE_ADMIN, "predictions", "read")
+        add_policy(ROLE_ADMIN, "predictions", "update")
+        add_policy(ROLE_ADMIN, "audit_log", "read")
 
         # Reviewer permissions
-        enforcer.add_policy(ROLE_REVIEWER, "batches", "read")
-        enforcer.add_policy(ROLE_REVIEWER, "predictions", "read")
-        enforcer.add_policy(ROLE_REVIEWER, "predictions", "update")
+        add_policy(ROLE_REVIEWER, "batches", "read")
+        add_policy(ROLE_REVIEWER, "predictions", "read")
+        add_policy(ROLE_REVIEWER, "predictions", "update")
 
         # Auditor permissions (read-only)
-        enforcer.add_policy(ROLE_AUDITOR, "batches", "read")
-        enforcer.add_policy(ROLE_AUDITOR, "audit_log", "read")
+        add_policy(ROLE_AUDITOR, "batches", "read")
+        add_policy(ROLE_AUDITOR, "audit_log", "read")
 
-        enforcer.save_policy()
+        if changed:
+            enforcer.save_policy()

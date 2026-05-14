@@ -10,7 +10,7 @@ from app.auth.users import UserRead
 from app.db.session import get_session
 from app.exceptions import InvalidLabel, PredictionNotFound, UnauthorizedRelabel
 from app.services import cache_service
-from app.services.prediction_service import get_recent, relabel
+from app.services.prediction_service import get_recent, list_predictions, relabel
 from fastapi_cache.decorator import cache
 
 router = APIRouter(prefix="/predictions", tags=["predictions"])
@@ -22,7 +22,18 @@ async def get_recent_predictions(
     user: UserRead = Depends(require_permission(RESOURCE_PREDICTIONS, ACTION_READ)),
     session: AsyncSession = Depends(get_session),
 ) -> list[PredictionResponse]:
-    return await get_recent(session)
+    del user
+    return [PredictionResponse.model_validate(row) for row in await get_recent(session)]
+
+
+@router.get("/batch/{batch_id}", response_model=list[PredictionResponse])
+async def get_predictions_for_batch(
+    batch_id: int = Path(...),
+    user: UserRead = Depends(require_permission(RESOURCE_PREDICTIONS, ACTION_READ)),
+    session: AsyncSession = Depends(get_session),
+) -> list[PredictionResponse]:
+    del user
+    return [PredictionResponse.model_validate(row) for row in await list_predictions(session, batch_id)]
 
 
 @router.patch("/{id}", response_model=PredictionResponse)
@@ -33,7 +44,8 @@ async def update_prediction(
     session: AsyncSession = Depends(get_session),
 ) -> PredictionResponse:
     try:
-        return await relabel(session, id, request.new_label, user.email)
+        prediction = await relabel(session, id, request.new_label, user.email, user.role or "")
+        return PredictionResponse.model_validate(prediction)
     except PredictionNotFound:
         raise HTTPException(status_code=404, detail="Prediction not found")
     except UnauthorizedRelabel:

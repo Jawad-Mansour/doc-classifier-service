@@ -4,8 +4,10 @@ Security settings and auth configuration.
 
 import os
 from typing import Any
+
 from passlib.context import CryptContext
 from pydantic import BaseModel, Field, field_validator
+
 from app.core.config import settings
 
 
@@ -34,7 +36,7 @@ class SecuritySettings(BaseModel):
     SECRET_KEY: str = Field(
         default_factory=lambda: os.getenv(
             "SECRET_KEY",
-            os.getenv("JWT_SECRET_KEY", "change-me-in-production"),
+            os.getenv("JWT_SECRET_KEY", ""),
         )
     )
     ALGORITHM: str = "HS256"
@@ -62,7 +64,7 @@ class SecuritySettings(BaseModel):
         if settings.DEBUG:
             return
 
-        if self.SECRET_KEY == "change-me-in-production":
+        if not self.SECRET_KEY:
             raise RuntimeError(
                 "SECRET_KEY must be configured before startup in non-debug mode."
             )

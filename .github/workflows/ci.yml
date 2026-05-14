@@ -29,11 +29,18 @@ jobs:
         run: docker compose build
 
       - name: Run database migrations
-        run: docker compose run --rm migrate
+        run: docker compose run -T --rm migrate
+
+      - name: Run lint in Docker
+        run: docker compose run -T --rm inference-worker ruff check app tests
+
+      - name: Run hardcoded secret scan
+        run: docker compose run -T --rm inference-worker python scripts/check_no_hardcoded_secrets.py
 
       - name: Run backend non-e2e tests in Docker
         run: |
           docker compose run \
+            -T \
             -e REQUIRE_VAULT=false \
             -e SEED_DEMO_USERS=false \
             --rm inference-worker \
@@ -41,13 +48,22 @@ jobs:
 
       - name: Run classifier tests in Docker
         run: |
-          docker compose run --rm inference-worker \
+          docker compose run -T --rm inference-worker \
             python -m pytest --noconftest tests/classifier
 
       - name: Run golden replay in Docker
         run: |
-          docker compose run --rm inference-worker \
+          docker compose run -T --rm inference-worker \
             python app/classifier/eval/golden.py
+
+      - name: Run live full-stack smoke workflow
+        run: |
+          python3 tests/e2e/test_full_stack_workflow.py || {
+            cat tmp/full_stack_workflow_report.md || true
+            docker compose ps || true
+            docker compose logs --tail 120 api inference-worker sftp-ingest-worker migrate vault || true
+            exit 1
+          }
 
       - name: Stop Docker stack
         if: always()

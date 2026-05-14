@@ -5,7 +5,7 @@ Workflow covered by this script:
 1. Ensure the Docker Compose stack is up.
 2. Verify API, readiness, Vault, Redis, and Postgres health.
 3. Exercise public auth endpoints: register, login, and /auth/me.
-4. Verify current protected batch API behavior for an unassigned role.
+4. Verify current protected batch API behavior for a newly registered default role.
 5. Push a real TIFF into the live SFTP upload folder.
 6. Wait for the SFTP ingest worker to create batch/document records.
 7. Wait for the inference worker to create a prediction and overlay.
@@ -19,6 +19,7 @@ A human-readable report is written to tmp/full_stack_workflow_report.md.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -35,36 +36,56 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 REPORT_PATH = REPO_ROOT / "tmp" / "full_stack_workflow_report.md"
 FIXTURE_PATH = REPO_ROOT / "app" / "classifier" / "eval" / "golden_images" / "test_00534_true_0_letter.tiff"
 
-API_BASE_URL = "http://localhost:8000"
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8080")
 VAULT_HEALTH_URL = "http://localhost:8200/v1/sys/health"
 
-POSTGRES_CONTAINER = "doc-classifier-service-postgres-1"
-REDIS_CONTAINER = "doc-classifier-service-redis-1"
-SFTP_CONTAINER = "doc-classifier-service-sftp-1"
-API_CONTAINER = "doc-classifier-service-api-1"
+POSTGRES_SERVICE = "postgres"
+REDIS_SERVICE = "redis"
+SFTP_SERVICE = "sftp"
+API_SERVICE = "api"
 
 SFTP_UPLOAD_DIR = "/home/test/upload"
 SFTP_PROCESSED_DIR = "/home/test/processed"
 MINIO_BUCKET = "documents"
 QUEUE_NAME = "default"
 
+API_WAIT_SECONDS = int(os.getenv("E2E_API_WAIT_SECONDS", "180"))
+DOCUMENT_WAIT_SECONDS = int(os.getenv("E2E_DOCUMENT_WAIT_SECONDS", "180"))
+PREDICTION_WAIT_SECONDS = int(os.getenv("E2E_PREDICTION_WAIT_SECONDS", "360"))
+AUDIT_WAIT_SECONDS = int(os.getenv("E2E_AUDIT_WAIT_SECONDS", "120"))
 
-def run_command(args: list[str], *, check: bool = True, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+
+def run_command(
+    args: list[str],
+    *,
+    check: bool = True,
+    cwd: Path | None = None,
+    timeout_seconds: int = 120,
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         args,
         cwd=str(cwd or REPO_ROOT),
         check=check,
         text=True,
         capture_output=True,
+        timeout=timeout_seconds,
     )
 
 
-def docker_exec(container: str, command: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
-    return run_command(["docker", "exec", container, *command], check=check)
+def compose_container(service: str) -> str:
+    result = run_command(["docker", "compose", "ps", "-q", service])
+    container = result.stdout.strip()
+    if not container:
+        raise RuntimeError(f"No running container found for Compose service {service!r}")
+    return container
 
 
-def docker_exec_shell(container: str, script: str, *, check: bool = True) -> subprocess.CompletedProcess[str]:
-    return run_command(["docker", "exec", container, "sh", "-lc", script], check=check)
+def docker_exec(service: str, command: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
+    return run_command(["docker", "exec", compose_container(service), *command], check=check)
+
+
+def docker_exec_shell(service: str, script: str, *, check: bool = True) -> subprocess.CompletedProcess[str]:
+    return run_command(["docker", "exec", compose_container(service), "sh", "-lc", script], check=check)
 
 
 def http_request(
@@ -127,7 +148,7 @@ def psql_query(sql: str) -> str:
             "exec",
             "-e",
             "PGPASSWORD=app",
-            POSTGRES_CONTAINER,
+            compose_container(POSTGRES_SERVICE),
             "psql",
             "-h",
             "127.0.0.1",
@@ -156,25 +177,25 @@ def check_minio_object(path: str) -> None:
         f"client.stat_object('{MINIO_BUCKET}', '{path}'); "
         "print('ok')"
     )
-    result = docker_exec(API_CONTAINER, ["python", "-c", script])
+    result = docker_exec(API_SERVICE, ["python", "-c", script])
     if result.stdout.strip() != "ok":
         raise RuntimeError(f"Unable to stat MinIO object {path!r}")
 
 
 def redis_ping() -> str:
-    return docker_exec(REDIS_CONTAINER, ["redis-cli", "PING"]).stdout.strip()
+    return docker_exec(REDIS_SERVICE, ["redis-cli", "PING"]).stdout.strip()
 
 
 def redis_key_exists(key: str) -> int:
-    return int(docker_exec(REDIS_CONTAINER, ["redis-cli", "EXISTS", key]).stdout.strip() or "0")
+    return int(docker_exec(REDIS_SERVICE, ["redis-cli", "EXISTS", key]).stdout.strip() or "0")
 
 
 def redis_queue_length() -> int:
-    return int(docker_exec(REDIS_CONTAINER, ["redis-cli", "LLEN", f"rq:queue:{QUEUE_NAME}"]).stdout.strip() or "0")
+    return int(docker_exec(REDIS_SERVICE, ["redis-cli", "LLEN", f"rq:queue:{QUEUE_NAME}"]).stdout.strip() or "0")
 
 
 def sftp_file_exists(path: str) -> bool:
-    return docker_exec_shell(SFTP_CONTAINER, f"test -f {path!s} && echo yes || echo no").stdout.strip() == "yes"
+    return docker_exec_shell(SFTP_SERVICE, f"test -f {path!s} && echo yes || echo no").stdout.strip() == "yes"
 
 
 def write_report(lines: list[str]) -> None:
@@ -209,7 +230,7 @@ def main() -> int:
                 "1. Start or refresh the Docker Compose stack.",
                 "2. Verify API health, readiness, Vault, Redis, and Postgres.",
                 "3. Register a unique API user, login, and call /api/v1/auth/me.",
-                "4. Observe current protected /api/v1/batches behavior without an assigned role.",
+                "4. Observe current protected /api/v1/batches behavior for a newly registered default role.",
                 "5. Copy a known-good TIFF into the live SFTP upload folder.",
                 "6. Wait for SFTP ingest to create batch/document rows and move the file.",
                 "7. Wait for inference to persist a prediction and overlay.",
@@ -217,18 +238,18 @@ def main() -> int:
             ],
         )
 
-        run_command(["docker", "compose", "up", "-d"], cwd=REPO_ROOT)
-        run_command(["docker", "compose", "run", "--rm", "migrate"], cwd=REPO_ROOT)
+        run_command(["docker", "compose", "up", "-d"], cwd=REPO_ROOT, timeout_seconds=180)
+        run_command(["docker", "compose", "run", "-T", "--rm", "migrate"], cwd=REPO_ROOT, timeout_seconds=60)
 
         health_status, health_body, _ = wait_for(
             lambda: _health_response("/api/v1/health"),
-            timeout_seconds=60,
+            timeout_seconds=API_WAIT_SECONDS,
             interval_seconds=2,
             description="API health endpoint",
         )
         ready_status, ready_body, _ = wait_for(
             lambda: _health_response("/api/v1/ready"),
-            timeout_seconds=60,
+            timeout_seconds=API_WAIT_SECONDS,
             interval_seconds=2,
             description="API readiness endpoint",
         )
@@ -303,11 +324,11 @@ def main() -> int:
         if sftp_file_exists(upload_container_path) or sftp_file_exists(processed_container_path):
             raise RuntimeError(f"Test filename collision in SFTP paths: {upload_filename}")
 
-        run_command(["docker", "cp", str(FIXTURE_PATH), f"{SFTP_CONTAINER}:{upload_container_path}"])
+        run_command(["docker", "cp", str(FIXTURE_PATH), f"{compose_container(SFTP_SERVICE)}:{upload_container_path}"])
 
         document_row = wait_for(
             lambda: _query_document_row(upload_filename),
-            timeout_seconds=90,
+            timeout_seconds=DOCUMENT_WAIT_SECONDS,
             interval_seconds=2,
             description="document row creation",
         )
@@ -322,7 +343,7 @@ def main() -> int:
 
         prediction_row = wait_for(
             lambda: _query_prediction_row(document_id),
-            timeout_seconds=120,
+            timeout_seconds=PREDICTION_WAIT_SECONDS,
             interval_seconds=2,
             description="prediction row creation",
         )
@@ -341,7 +362,7 @@ def main() -> int:
 
         audit_row = wait_for(
             lambda: _query_audit_row(document_id),
-            timeout_seconds=60,
+            timeout_seconds=AUDIT_WAIT_SECONDS,
             interval_seconds=2,
             description="prediction audit row creation",
         )
@@ -356,6 +377,10 @@ def main() -> int:
             raise RuntimeError(f"SFTP worker did not move file to processed: {processed_container_path}")
         if sftp_file_exists(upload_container_path):
             raise RuntimeError(f"SFTP upload file still present after processing: {upload_container_path}")
+
+        batch_row = split_row(psql_query(f"SELECT id, request_id, status FROM batches WHERE id = {batch_id};"))
+        if len(batch_row) < 3 or batch_row[2] != "done":
+            raise RuntimeError(f"Batch did not finish as done: {batch_row}")
 
         append_section(
             report_lines,
@@ -381,7 +406,7 @@ def main() -> int:
             [
                 "- Full live workflow passed for the application, storage, queue, ingest, and inference path.",
                 "- Verified services: API health/readiness, auth register/login/me, Redis, Postgres, SFTP ingest, MinIO raw object, RQ job artifact, inference worker prediction persistence, overlay generation, and audit log persistence.",
-                "- Protected batch/prediction/audit read APIs remain externally untestable without an app change because live role assignment is not exposed through the API.",
+                "- Protected batch API was verified with a newly registered default auditor role.",
                 f"- Vault result: {vault_summary}",
             ],
         )
@@ -390,6 +415,7 @@ def main() -> int:
         print(f"PASS: full stack workflow validated. Report written to {REPORT_PATH}")
         return 0
     except Exception as exc:  # pragma: no cover - live failure path
+        diagnostics = _collect_failure_diagnostics()
         append_section(
             report_lines,
             "Failure",
@@ -399,9 +425,16 @@ def main() -> int:
                 "```text",
                 traceback.format_exc().rstrip(),
                 "```",
+                "",
+                "### Docker diagnostics",
+                "",
+                "```text",
+                diagnostics.rstrip(),
+                "```",
             ],
         )
         write_report(report_lines)
+        print("\n".join(report_lines[-12:]), file=sys.stderr)
         print(f"FAIL: full stack workflow validation failed. Partial report written to {REPORT_PATH}", file=sys.stderr)
         return 1
 
@@ -445,22 +478,34 @@ def _check_vault() -> str:
         status, body, _ = http_request("GET", VAULT_HEALTH_URL)
         return f"reachable with HTTP {status} {body}"
     except Exception:
-        status_output = run_command(
-            [
-                "docker",
-                "ps",
-                "-a",
-                "--format",
-                "{{.Names}}|{{.Status}}",
-            ]
-        ).stdout
-        vault_line = next(
-            (line for line in status_output.splitlines() if line.startswith("doc-classifier-service-vault-1|")),
-            "",
-        )
-        vault_logs = run_command(["docker", "logs", "--tail", "20", "doc-classifier-service-vault-1"], check=False).stdout.strip()
+        vault_container = run_command(["docker", "compose", "ps", "-q", "vault"], check=False).stdout.strip()
+        vault_line = ""
+        vault_logs = ""
+        if vault_container:
+            vault_line = run_command(
+                ["docker", "inspect", "-f", "{{.Name}}|{{.State.Status}}", vault_container],
+                check=False,
+            ).stdout.strip()
+            vault_logs = run_command(["docker", "logs", "--tail", "20", vault_container], check=False).stdout.strip()
         vault_logs = vault_logs or "no logs captured"
         return f"unreachable; container status={vault_line or 'missing'}; logs={vault_logs}"
+
+
+def _collect_failure_diagnostics() -> str:
+    sections: list[str] = []
+    commands = [
+        ("docker compose ps", ["docker", "compose", "ps"]),
+        ("api logs", ["docker", "compose", "logs", "--tail", "80", "api"]),
+        ("inference-worker logs", ["docker", "compose", "logs", "--tail", "80", "inference-worker"]),
+        ("sftp-ingest-worker logs", ["docker", "compose", "logs", "--tail", "80", "sftp-ingest-worker"]),
+        ("migrate logs", ["docker", "compose", "logs", "--tail", "80", "migrate"]),
+        ("vault logs", ["docker", "compose", "logs", "--tail", "80", "vault"]),
+    ]
+    for title, command in commands:
+        result = run_command(command, check=False, timeout_seconds=30)
+        output = (result.stdout + result.stderr).strip()
+        sections.append(f"## {title}\n{output or '<no output>'}")
+    return "\n\n".join(sections)
 
 
 if __name__ == "__main__":

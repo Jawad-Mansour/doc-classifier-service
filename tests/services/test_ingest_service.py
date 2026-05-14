@@ -2,21 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import app.workers.sftp_ingest_worker as sftp_ingest_worker
-from app.workers.sftp_ingest_worker import process_sftp_file
-
-
-class FakeSFTPClient:
-    def __init__(self) -> None:
-        self.downloaded: list[str] = []
-        self.moved: list[str] = []
-
-    def download_bytes(self, filename: str) -> bytes:
-        self.downloaded.append(filename)
-        return b"fake-tiff-bytes"
-
-    def move_to_processed(self, filename: str) -> None:
-        self.moved.append(filename)
+from app.services import ingest_service
 
 
 class FakeBlobClient:
@@ -63,57 +49,57 @@ class FakeBatchService:
 
 
 @pytest.mark.asyncio
-async def test_process_sftp_file_uploads_and_enqueues_payload():
-    sftp_client = FakeSFTPClient()
+async def test_enqueue_uploaded_document_uploads_and_enqueues():
     blob_client = FakeBlobClient()
-    queued_payloads: list[dict[str, object]] = []
     batch_service = FakeBatchService()
+    queued_payloads: list[dict[str, object]] = []
 
     def queue_enqueue(payload: dict[str, object]) -> str:
         queued_payloads.append(payload)
         return "rq-job-1"
 
-    result = await process_sftp_file(
-        "file1.tiff",
-        sftp_client=sftp_client,
-        session=object(),
+    result = await ingest_service.enqueue_uploaded_document(
+        object(),
         batch_service=batch_service,
+        filename="sample.png",
+        file_bytes=b"png-bytes",
+        content_type="image/png",
         blob_client=blob_client,
         queue_enqueue=queue_enqueue,
         request_id="request-1",
         job_id="job-1",
     )
 
-    assert sftp_client.downloaded == ["file1.tiff"]
-    assert sftp_client.moved == ["file1.tiff"]
-    assert blob_client.uploads[0]["bucket"] == "documents"
-    assert blob_client.uploads[0]["path"] == "raw/batch_12/file1.tiff"
-    assert blob_client.uploads[0]["content_type"] == "image/tiff"
+    assert blob_client.uploads == [
+        {
+            "bucket": "documents",
+            "path": "raw/batch_12/sample.png",
+            "data": b"png-bytes",
+            "content_type": "image/png",
+        }
+    ]
     assert queued_payloads == [
         {
             "job_id": "job-1",
             "batch_id": 12,
             "document_id": 44,
             "blob_bucket": "documents",
-            "blob_path": "raw/batch_12/file1.tiff",
-            "original_filename": "file1.tiff",
+            "blob_path": "raw/batch_12/sample.png",
+            "original_filename": "sample.png",
             "request_id": "request-1",
         }
     ]
     assert result["status"] == "queued"
-    assert result["queue_job_id"] == "rq-job-1"
+    assert result["batch_id"] == 12
     assert batch_service.status_updates == [(12, "processing")]
 
 
-def test_run_uses_configured_default_poll_interval(monkeypatch):
-    captured: dict[str, int] = {}
-
-    async def fake_run_forever(poll_interval: int) -> None:
-        captured["poll_interval"] = poll_interval
-
-    monkeypatch.setattr(sftp_ingest_worker.settings, "SFTP_POLL_INTERVAL_SECONDS", 13)
-    monkeypatch.setattr(sftp_ingest_worker, "_run_forever", fake_run_forever)
-
-    sftp_ingest_worker.run()
-
-    assert captured == {"poll_interval": 13}
+@pytest.mark.asyncio
+async def test_enqueue_uploaded_document_rejects_unsupported_extension():
+    with pytest.raises(ValueError, match="Unsupported file extension"):
+        await ingest_service.enqueue_uploaded_document(
+            object(),
+            batch_service=FakeBatchService(),
+            filename="sample.pdf",
+            file_bytes=b"pdf-bytes",
+        )

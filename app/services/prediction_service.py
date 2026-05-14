@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.casbin import ROLE_ADMIN
 from app.core.constants import CLASS_NAMES, CONFIDENCE_THRESHOLD
 from app.domain.prediction import PredictionDomain
 from app.exceptions import InvalidLabel, PredictionNotFound, UnauthorizedRelabel
@@ -58,11 +59,12 @@ async def relabel(
     prediction_id: int,
     new_label: str,
     reviewer: str,
+    actor_role: str,
 ) -> PredictionDomain:
     prediction = await prediction_repository.get_by_id(session, prediction_id)
     if prediction is None:
         raise PredictionNotFound
-    if prediction.confidence >= CONFIDENCE_THRESHOLD:
+    if actor_role != ROLE_ADMIN and prediction.confidence >= CONFIDENCE_THRESHOLD:
         raise UnauthorizedRelabel
     if new_label not in CLASS_NAMES:
         raise InvalidLabel(f"Unknown label: {new_label}")
@@ -70,6 +72,8 @@ async def relabel(
     updated = await prediction_repository.update_label(
         session, prediction_id, new_label_id, new_label, reviewer
     )
+    if updated is None:
+        raise PredictionNotFound
     await audit_service.log_event(session, reviewer, "relabel", f"prediction:{prediction_id}")
     await session.commit()
     await cache_service.invalidate_prediction_write(updated.batch_id)

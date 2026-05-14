@@ -1,33 +1,14 @@
 import asyncio
-import inspect
-from pathlib import PurePosixPath
 from typing import Any
-from uuid import uuid4
 
 from app.core.config import settings
-from app.core.constants import BatchStatus
 from app.infra.blob.minio_client import blob_client as default_blob_client
 from app.infra.queue.rq_client import enqueue_inference_job
 from app.infra.sftp.client import SFTPClient, is_valid_tiff
+from app.services.ingest_service import enqueue_uploaded_document
 
 
 PROCESSED_FILES: set[str] = set()
-
-
-def _safe_filename(filename: str) -> str:
-    return PurePosixPath(filename).name
-
-
-def _object_id(value: Any) -> int:
-    if isinstance(value, dict):
-        return int(value["id"])
-    return int(value.id)
-
-
-async def _maybe_await(value: Any) -> Any:
-    if inspect.isawaitable(value):
-        return await value
-    return value
 
 
 async def process_sftp_file(
@@ -44,66 +25,29 @@ async def process_sftp_file(
     if not is_valid_tiff(filename):
         raise ValueError(f"Unsupported SFTP file extension: {filename}")
 
-    request_id = request_id or str(uuid4())
-    job_id = job_id or str(uuid4())
-    original_filename = _safe_filename(filename)
-
-    batch = await _maybe_await(batch_service.create_batch(session, request_id))
-    batch_id = _object_id(batch)
-    blob_bucket = settings.MINIO_BUCKET
-    blob_path = f"raw/batch_{batch_id}/{original_filename}"
-
-    document = await _maybe_await(
-        batch_service.add_document(
-            session,
-            batch_id=batch_id,
-            filename=original_filename,
-            blob_bucket=blob_bucket,
-            blob_path=blob_path,
-        )
-    )
-    document_id = _object_id(document)
-
     image_bytes = sftp_client.download_bytes(filename)
-    blob_client.upload_bytes(
-        blob_bucket,
-        blob_path,
-        image_bytes,
+    result = await enqueue_uploaded_document(
+        session,
+        batch_service=batch_service,
+        filename=filename,
+        file_bytes=image_bytes,
         content_type="image/tiff",
+        blob_client=blob_client,
+        queue_enqueue=queue_enqueue,
+        request_id=request_id,
+        job_id=job_id,
     )
-
-    payload = {
-        "job_id": job_id,
-        "batch_id": batch_id,
-        "document_id": document_id,
-        "blob_bucket": blob_bucket,
-        "blob_path": blob_path,
-        "original_filename": original_filename,
-        "request_id": request_id,
-    }
-    queue_job_id = queue_enqueue(payload)
-    await _maybe_await(batch_service.update_status(session, batch_id, BatchStatus.PROCESSING))
 
     if hasattr(sftp_client, "move_to_processed"):
         sftp_client.move_to_processed(filename)
 
     print(
         "Queued inference job "
-        f"request_id={request_id} job_id={job_id} queue_job_id={queue_job_id} "
-        f"batch_id={batch_id} document_id={document_id} filename={original_filename}"
+        f"request_id={result['request_id']} job_id={result['job_id']} queue_job_id={result['queue_job_id']} "
+        f"batch_id={result['batch_id']} document_id={result['document_id']} filename={result['original_filename']}"
     )
 
-    return {
-        "status": "queued",
-        "request_id": request_id,
-        "job_id": job_id,
-        "queue_job_id": queue_job_id,
-        "batch_id": batch_id,
-        "document_id": document_id,
-        "blob_bucket": blob_bucket,
-        "blob_path": blob_path,
-        "original_filename": original_filename,
-    }
+    return result
 
 
 async def poll_sftp_once(

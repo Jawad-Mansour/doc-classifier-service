@@ -1,8 +1,12 @@
 import logging
+import inspect
 from hashlib import md5
 from typing import Any
 
 from fastapi_cache import FastAPICache
+from redis import asyncio as aioredis
+
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +31,13 @@ def _cache_key(prefix: str, namespace: str, identity: str) -> str:
     return f"{prefix}:{namespace}:{key}"
 
 
+def _cache_prefix() -> str:
+    try:
+        return FastAPICache.get_prefix()
+    except Exception:
+        return "fastapi-cache"
+
+
 def batch_detail_key_builder(
     func: Any,
     namespace: str = "",
@@ -43,7 +54,7 @@ def batch_detail_key_builder(
         batch_id = request.path_params.get("bid")
     detail_namespace = batch_namespace(int(batch_id)) if batch_id is not None else namespace
     identity = f"{func.__module__}:{func.__name__}:{batch_id}"
-    return _cache_key(FastAPICache.get_prefix(), detail_namespace, identity)
+    return _cache_key(_cache_prefix(), detail_namespace, identity)
 
 
 def auth_me_key_builder(
@@ -61,11 +72,29 @@ def auth_me_key_builder(
     subject = getattr(user, "id", None)
     auth_namespace = auth_me_namespace(str(subject)) if subject is not None else namespace
     identity = f"{func.__module__}:{func.__name__}:{subject}"
-    return _cache_key(FastAPICache.get_prefix(), auth_namespace, identity)
+    return _cache_key(_cache_prefix(), auth_namespace, identity)
 
 
 async def _clear(namespace: str) -> None:
-    await FastAPICache.clear(namespace=namespace)
+    try:
+        await FastAPICache.clear(namespace=namespace)
+    except Exception:
+        redis = aioredis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=False)
+        try:
+            pattern = f"{_cache_prefix()}:{namespace}:*"
+            cursor = 0
+            while True:
+                cursor, keys = await redis.scan(cursor=cursor, match=pattern, count=100)
+                if keys:
+                    await redis.delete(*keys)
+                if cursor == 0:
+                    break
+        finally:
+            close = getattr(redis, "aclose", None) or getattr(redis, "close", None)
+            if close is not None:
+                result = close()
+                if inspect.isawaitable(result):
+                    await result
 
 
 async def invalidate_batches() -> None:

@@ -22,7 +22,8 @@ async def list_batches_route(
     user: UserRead = Depends(require_permission(RESOURCE_BATCHES, ACTION_READ)),
     session: AsyncSession = Depends(get_session),
 ) -> list[BatchResponse]:
-    return await list_batches(session)
+    del user
+    return [BatchResponse.model_validate(row) for row in await list_batches(session)]
 
 
 @router.get("/{bid}", response_model=BatchResponse)
@@ -33,6 +34,7 @@ async def get_batch_route(
     session: AsyncSession = Depends(get_session),
 ) -> BatchResponse:
     try:
-        return await get_batch(session, bid)
+        del user
+        return BatchResponse.model_validate(await get_batch(session, bid))
     except BatchNotFound:
         raise HTTPException(status_code=404, detail="Batch not found")

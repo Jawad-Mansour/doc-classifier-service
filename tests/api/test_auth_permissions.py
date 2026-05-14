@@ -3,12 +3,13 @@ from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
 
 import app.api.routers.batches as batches_router
+import app.api.routers.classify as classify_router
 import app.api.routers.predictions as predictions_router
 import app.api.routers.users as users_router
 from app.auth.users import UserRead
 from app.api.deps.auth import get_current_user_with_role
 from app.main import app
-from app.api.schemas import PredictionResponse, UserRoleResponse, BatchResponse
+from app.api.schemas import BatchResponse, PredictionResponse, UserRoleResponse
 from app.core import startup as startup_module
 
 
@@ -91,7 +92,9 @@ def test_reviewer_can_relabel_low_confidence_prediction(client: TestClient, requ
     reviewer = make_user("reviewer")
     override_current_user(reviewer)
 
-    async def mock_relabel(session, prediction_id: int, new_label: str, actor_email: str) -> PredictionResponse:
+    async def mock_relabel(
+        session, prediction_id: int, new_label: str, actor_email: str, actor_role: str
+    ) -> PredictionResponse:
         return PredictionResponse(
             id=prediction_id,
             batch_id=1,
@@ -112,6 +115,117 @@ def test_reviewer_can_relabel_low_confidence_prediction(client: TestClient, requ
     assert response.status_code == 200
     assert response.json()["label"] == "approved"
     assert response.headers["X-Request-ID"] == "test-request-123"
+
+
+def test_admin_can_relabel_high_confidence_prediction(client: TestClient, request_headers: dict, monkeypatch):
+    admin = make_user("admin")
+    override_current_user(admin)
+
+    async def mock_relabel(
+        session, prediction_id: int, new_label: str, actor_email: str, actor_role: str
+    ) -> PredictionResponse:
+        assert actor_role == "admin"
+        return PredictionResponse(
+            id=prediction_id,
+            batch_id=1,
+            label=new_label,
+            confidence=0.99,
+            relabeled_by=actor_email,
+            created_at="2026-05-12T00:00:00Z",
+        )
+
+    monkeypatch.setattr(predictions_router, "relabel", mock_relabel)
+
+    response = client.patch(
+        "/api/v1/predictions/1",
+        json={"new_label": "budget"},
+        headers=request_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["label"] == "budget"
+    assert response.json()["relabeled_by"] == "admin@example.com"
+
+
+def test_reviewer_can_queue_classification_upload(client: TestClient, monkeypatch):
+    reviewer = make_user("reviewer")
+    override_current_user(reviewer)
+
+    async def mock_enqueue_uploaded_document(
+        session, *, batch_service, filename: str, file_bytes: bytes, content_type: str | None = None, **kwargs
+    ):
+        assert filename == "sample.png"
+        assert content_type == "image/png"
+        assert file_bytes == b"png-bytes"
+        return {
+            "status": "queued",
+            "request_id": "req-123",
+            "job_id": "job-123",
+            "queue_job_id": "rq-123",
+            "batch_id": 7,
+            "document_id": 11,
+            "blob_bucket": "documents",
+            "blob_path": "raw/batch_7/sample.png",
+            "original_filename": "sample.png",
+        }
+
+    monkeypatch.setattr(classify_router, "enqueue_uploaded_document", mock_enqueue_uploaded_document)
+
+    response = client.post(
+        "/api/v1/classify",
+        files={"file": ("sample.png", b"png-bytes", "image/png")},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "queued"
+    assert response.json()["batch_id"] == 7
+
+
+def test_classify_rejects_unsupported_upload_extension(client: TestClient):
+    reviewer = make_user("reviewer")
+    override_current_user(reviewer)
+
+    response = client.post(
+        "/api/v1/classify",
+        files={"file": ("sample.pdf", b"%PDF-1.4", "application/pdf")},
+    )
+
+    assert response.status_code == 400
+    assert "Supported file types" in response.json()["detail"]
+
+
+def test_batch_prediction_response_includes_top5(client: TestClient, monkeypatch):
+    reviewer = make_user("reviewer")
+    override_current_user(reviewer)
+
+    top5 = [
+        {"label": "letter", "confidence": 0.91},
+        {"label": "form", "confidence": 0.05},
+        {"label": "invoice", "confidence": 0.02},
+        {"label": "email", "confidence": 0.01},
+        {"label": "memo", "confidence": 0.01},
+    ]
+
+    async def mock_list_predictions(session, batch_id: int) -> list[PredictionResponse]:
+        assert batch_id == 7
+        return [
+            PredictionResponse(
+                id=1,
+                batch_id=batch_id,
+                label="letter",
+                confidence=0.91,
+                top5=top5,
+                relabeled_by=None,
+                created_at="2026-05-12T00:00:00Z",
+            )
+        ]
+
+    monkeypatch.setattr(predictions_router, "list_predictions", mock_list_predictions)
+
+    response = client.get("/api/v1/predictions/batch/7")
+
+    assert response.status_code == 200
+    assert response.json()[0]["top5"] == top5
 
 
 def test_auditor_cannot_relabel(client: TestClient):
