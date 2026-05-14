@@ -4,7 +4,7 @@ Replace the placeholders in this file before the final submission tag.
 
 ## Trello
 
-- Board URL: `TODO-add-real-trello-link`
+- Board URL: https://trello.com/invite/b/6a0196cd040077442f9771a1/ATTI503ddfe8b0c9f08ab59ebe1e16c9d9c8FF32B507/my-trello-board
 
 ## Ownership
 
