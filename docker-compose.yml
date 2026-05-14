@@ -148,11 +148,11 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
     depends_on:
       - api
     environment:
       - VITE_API_BASE=/api/v1
+      - VITE_API_PROXY_TARGET=http://api:8000
 
   sftp-ingest-worker:
     build:

@@ -91,7 +91,9 @@ def test_reviewer_can_relabel_low_confidence_prediction(client: TestClient, requ
     reviewer = make_user("reviewer")
     override_current_user(reviewer)
 
-    async def mock_relabel(session, prediction_id: int, new_label: str, actor_email: str) -> PredictionResponse:
+    async def mock_relabel(
+        session, prediction_id: int, new_label: str, actor_email: str, actor_role: str
+    ) -> PredictionResponse:
         return PredictionResponse(
             id=prediction_id,
             batch_id=1,
@@ -112,6 +114,36 @@ def test_reviewer_can_relabel_low_confidence_prediction(client: TestClient, requ
     assert response.status_code == 200
     assert response.json()["label"] == "approved"
     assert response.headers["X-Request-ID"] == "test-request-123"
+
+
+def test_admin_can_relabel_high_confidence_prediction(client: TestClient, request_headers: dict, monkeypatch):
+    admin = make_user("admin")
+    override_current_user(admin)
+
+    async def mock_relabel(
+        session, prediction_id: int, new_label: str, actor_email: str, actor_role: str
+    ) -> PredictionResponse:
+        assert actor_role == "admin"
+        return PredictionResponse(
+            id=prediction_id,
+            batch_id=1,
+            label=new_label,
+            confidence=0.99,
+            relabeled_by=actor_email,
+            created_at="2026-05-12T00:00:00Z",
+        )
+
+    monkeypatch.setattr(predictions_router, "relabel", mock_relabel)
+
+    response = client.patch(
+        "/api/v1/predictions/1",
+        json={"new_label": "budget"},
+        headers=request_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["label"] == "budget"
+    assert response.json()["relabeled_by"] == "admin@example.com"
 
 
 def test_auditor_cannot_relabel(client: TestClient):

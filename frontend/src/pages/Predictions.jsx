@@ -194,7 +194,7 @@ export default function Predictions() {
           </thead>
           <tbody className="divide-y divide-slate-50">
             {filtered.map(p => {
-              const locked = p.confidence >= 0.7
+              const locked = role !== 'admin' && p.confidence >= 0.7
               return (
                 <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
                   <td className="px-5 py-3.5 font-mono text-xs text-slate-400">#{p.id}</td>
@@ -216,7 +216,7 @@ export default function Predictions() {
                       <button
                         onClick={() => !locked && setRelabelTarget(p)}
                         disabled={locked}
-                        title={locked ? 'Confidence ≥ 70% — relabeling not allowed' : 'Relabel this prediction'}
+                        title={locked ? 'Confidence ≥ 70% — reviewer relabeling not allowed' : 'Relabel this prediction'}
                         className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                           locked
                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'

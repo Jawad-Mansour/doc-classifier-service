@@ -5,7 +5,7 @@ Workflow covered by this script:
 1. Ensure the Docker Compose stack is up.
 2. Verify API, readiness, Vault, Redis, and Postgres health.
 3. Exercise public auth endpoints: register, login, and /auth/me.
-4. Verify current protected batch API behavior for an unassigned role.
+4. Verify current protected batch API behavior for a newly registered default role.
 5. Push a real TIFF into the live SFTP upload folder.
 6. Wait for the SFTP ingest worker to create batch/document records.
 7. Wait for the inference worker to create a prediction and overlay.
@@ -19,6 +19,7 @@ A human-readable report is written to tmp/full_stack_workflow_report.md.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -35,7 +36,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 REPORT_PATH = REPO_ROOT / "tmp" / "full_stack_workflow_report.md"
 FIXTURE_PATH = REPO_ROOT / "app" / "classifier" / "eval" / "golden_images" / "test_00534_true_0_letter.tiff"
 
-API_BASE_URL = "http://localhost:8000"
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8080")
 VAULT_HEALTH_URL = "http://localhost:8200/v1/sys/health"
 
 POSTGRES_CONTAINER = "doc-classifier-service-postgres-1"
@@ -209,7 +210,7 @@ def main() -> int:
                 "1. Start or refresh the Docker Compose stack.",
                 "2. Verify API health, readiness, Vault, Redis, and Postgres.",
                 "3. Register a unique API user, login, and call /api/v1/auth/me.",
-                "4. Observe current protected /api/v1/batches behavior without an assigned role.",
+                "4. Observe current protected /api/v1/batches behavior for a newly registered default role.",
                 "5. Copy a known-good TIFF into the live SFTP upload folder.",
                 "6. Wait for SFTP ingest to create batch/document rows and move the file.",
                 "7. Wait for inference to persist a prediction and overlay.",
@@ -381,7 +382,7 @@ def main() -> int:
             [
                 "- Full live workflow passed for the application, storage, queue, ingest, and inference path.",
                 "- Verified services: API health/readiness, auth register/login/me, Redis, Postgres, SFTP ingest, MinIO raw object, RQ job artifact, inference worker prediction persistence, overlay generation, and audit log persistence.",
-                "- Protected batch/prediction/audit read APIs remain externally untestable without an app change because live role assignment is not exposed through the API.",
+                "- Protected batch API was verified with a newly registered default auditor role.",
                 f"- Vault result: {vault_summary}",
             ],
         )

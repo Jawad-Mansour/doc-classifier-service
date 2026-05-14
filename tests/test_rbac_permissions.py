@@ -9,6 +9,7 @@ from app.auth.casbin import (
     ROLE_AUDITOR,
     RESOURCE_USERS,
     RESOURCE_BATCHES,
+    RESOURCE_PREDICTIONS,
     RESOURCE_AUDIT_LOG,
     ACTION_READ,
     ACTION_UPDATE,
@@ -44,6 +45,9 @@ def _make_seeded_enforcer():
     enforcer.add_policy(ROLE_ADMIN, "users", "update")
     enforcer.add_policy(ROLE_ADMIN, "users", "delete")
     enforcer.add_policy(ROLE_ADMIN, "users", "manage_roles")
+    enforcer.add_policy(ROLE_ADMIN, "batches", "read")
+    enforcer.add_policy(ROLE_ADMIN, "predictions", "read")
+    enforcer.add_policy(ROLE_ADMIN, "predictions", "update")
     enforcer.add_policy(ROLE_ADMIN, "audit_log", "read")
     enforcer.add_policy(ROLE_REVIEWER, "batches", "read")
     enforcer.add_policy(ROLE_REVIEWER, "predictions", "read")
@@ -60,6 +64,40 @@ def test_admin_has_user_permissions():
 
     assert [ROLE_ADMIN, RESOURCE_USERS, ACTION_READ] in policies
     assert [ROLE_ADMIN, RESOURCE_USERS, ACTION_MANAGE_ROLES] in policies
+    assert enforcer.enforce(ROLE_ADMIN, RESOURCE_BATCHES, ACTION_READ)
+    assert enforcer.enforce(ROLE_ADMIN, RESOURCE_PREDICTIONS, ACTION_READ)
+    assert enforcer.enforce(ROLE_ADMIN, RESOURCE_PREDICTIONS, ACTION_UPDATE)
+
+
+@pytest.mark.asyncio
+async def test_seed_default_policies_adds_missing_admin_permissions():
+    """Seeder must repair existing DB policy tables that are missing newer policies."""
+    with patch("app.services.role_service.get_casbin_enforcer") as mock_get_enforcer:
+        mock_enforcer = MagicMock()
+        mock_get_enforcer.return_value = mock_enforcer
+        mock_enforcer.add_policy.side_effect = [
+            False,  # admin users create
+            False,  # admin users read
+            False,  # admin users update
+            False,  # admin users delete
+            False,  # admin users manage_roles
+            True,   # admin batches read
+            True,   # admin predictions read
+            True,   # admin predictions update
+            False,  # admin audit read
+            False,  # reviewer batches read
+            False,  # reviewer predictions read
+            False,  # reviewer predictions update
+            False,  # auditor batches read
+            False,  # auditor audit read
+        ]
+
+        await RoleService.seed_default_policies()
+
+    mock_enforcer.add_policy.assert_any_call(ROLE_ADMIN, RESOURCE_BATCHES, ACTION_READ)
+    mock_enforcer.add_policy.assert_any_call(ROLE_ADMIN, RESOURCE_PREDICTIONS, ACTION_READ)
+    mock_enforcer.add_policy.assert_any_call(ROLE_ADMIN, RESOURCE_PREDICTIONS, ACTION_UPDATE)
+    mock_enforcer.save_policy.assert_called_once()
 
 
 def test_reviewer_cannot_manage_users():

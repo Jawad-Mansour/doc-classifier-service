@@ -33,7 +33,7 @@ async def update_prediction(
     session: AsyncSession = Depends(get_session),
 ) -> PredictionResponse:
     try:
-        return await relabel(session, id, request.new_label, user.email)
+        return await relabel(session, id, request.new_label, user.email, user.role or "")
     except PredictionNotFound:
         raise HTTPException(status_code=404, detail="Prediction not found")
     except UnauthorizedRelabel:
